@@ -118,5 +118,5 @@ def process_data_from_tsv(filePathIn=None):
 
     return (pmids, titles, abstracts)
 
-my_list = process_data_from_tsv('Data/TREC/TSV/sample.tsv')
-print (my_list[1])
+# my_list = process_data_from_tsv('Data/TREC/TSV/sample.tsv')
+# print (my_list[1])
