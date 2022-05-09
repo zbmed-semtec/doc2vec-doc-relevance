@@ -1,5 +1,9 @@
 import pandas as pd
 import re
+import xml.etree.ElementTree as et
+import os
+from turtle import tracer
+from numpy import full
 from nltk.tokenize import word_tokenize
 from nltk.tokenize.treebank import TreebankWordDetokenizer
 from nltk.corpus import stopwords
@@ -63,12 +67,21 @@ def detokenize(token):
 def remove_whitespaces_before_punctuations(text):
     return re.sub(r'\s([?.!,"](?:\s|$))', r'\1', text)
 
-def process_data_from_tsv(filePathIn=None):
+# Process the title and abstracts in the corpus
+def data_processing(corpus):
+    '''
+    Processes the data in the corpus. To get better document embeddings from doc2vec, the data should first be processed. This includes converting the
+    text into lower-case characters, tokenizing the data, removing irrelevant characters from the data and lemmatizing it.
+    
+    Input:  corpus        ->  DataFrame: Pandas dataframe containing the pmid, title and the abstract of the papers.
+
+    Output: pmids         ->  list: A list of all pubmed ids (string) associated to the paper.
+            titles        ->  list: A list of lists where each sub-list contains the cleaned/processed title (string).
+            abstrats      ->  list: A list of lists where each sub-list contains the cleaned/processed abstract (string).
+    '''
     pmids = []
     titles = []
     abstracts = []
-
-    corpus = pd.read_csv(filePathIn, sep='\t')
 
     for index, row in corpus.iterrows():
         # Converting title and abstract into lowercase
@@ -103,6 +116,7 @@ def process_data_from_tsv(filePathIn=None):
         row['title'] = remove_whitespaces_before_punctuations(row['title'])
         row['abstract'] = remove_whitespaces_before_punctuations(row['abstract'])
 
+        # Updates the title and abstract rows in the corpus
         corpus.at[index,'title'] = row['title']
         corpus.at[index,'abstract'] = row['abstract']
 
@@ -118,5 +132,53 @@ def process_data_from_tsv(filePathIn=None):
 
     return (pmids, titles, abstracts)
 
-# my_list = process_data_from_tsv('Data/TREC/TSV/sample.tsv')
-# print (my_list[1])
+# Extract data from tsv file and process it
+def process_data_from_tsv(file_path_in=None):
+    '''
+    Extracts the data from the RELISH and TREC tsv files and processes it.
+    
+    Input:  file_path_in    ->  string: The filepath of the RELISH or TREC input tsv file.
+
+    Output: pmids           ->  list: A list of all pubmed ids (string) associated to the paper.
+            titles          ->  list: A list of lists where each sub-list contains the cleaned/processed title (string).
+            abstrats        ->  list: A list of lists where each sub-list contains the cleaned/processed abstract (string).
+    '''
+    corpus = pd.read_csv(file_path_in, sep='\t')
+
+    pmids, titles, abstracts = data_processing(corpus)
+
+    return (pmids, titles, abstracts)
+
+# Extract data from xml file and process it
+def process_data_from_xml(directory_path=None):
+    '''
+    Extracts the data from the RELISH and TREC xml files, converts it into the Pandas dataframes and processes it.
+    
+    Input:  directory_path    ->  string: The directory path to the RELISH or TREC xml files.
+
+    Output: pmids             ->  list: A list of all pubmed ids (string) associated to the paper.
+            titles            ->  list: A list of lists where each sub-list contains the cleaned/processed title (string).
+            abstrats          ->  list: A list of lists where each sub-list contains the cleaned/processed abstract (string).
+    '''
+    # Convert XML to Pandas dataframes
+    df_cols = ["PMID", "title", "abstract"]
+    rows = []
+
+    for filename in os.listdir(directory_path):
+        if not filename.endswith('.xml'): continue
+        fullname = os.path.join(directory_path, filename)
+        xtree = et.parse(fullname)
+        xroot = xtree.getroot()
+
+        id = xroot[0].find("id").text.strip()
+        text = xroot[0].findall(".//text")
+        title = text[0].text.strip()
+        abstract = text[1].text.strip()
+
+        rows.append({"PMID": id, "title": title, "abstract": abstract})
+
+    corpus = pd.DataFrame(rows, columns = df_cols)
+    pmids, titles, abstracts = data_processing(corpus)
+
+    return (pmids, titles, abstracts)
+    
