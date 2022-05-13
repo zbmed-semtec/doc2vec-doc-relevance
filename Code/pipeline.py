@@ -2,6 +2,7 @@ import pandas as pd
 import re
 import xml.etree.ElementTree as et
 import os
+import numpy as np
 from turtle import tracer
 from numpy import full
 from nltk.tokenize import word_tokenize
@@ -10,6 +11,7 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk import pos_tag
 from nltk.corpus import wordnet
+from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 
 en_stopwords = set(stopwords.words('english'))
 irrelevant_characters = [":", ";", "\'", "\"", "[", "]"]
@@ -182,3 +184,24 @@ def process_data_from_xml(directory_path=None):
 
     return (pmids, titles, abstracts)
     
+def createDoc2VecModel(pmids, abstracts, output_file):
+    tagged_data = [TaggedDocument(words=word_tokenize(_d[0]), tags=[pmids[i]]) for i, _d in enumerate(abstracts)]
+
+    model = Doc2Vec(vector_size=200, window=5, min_count=1, epochs=5)
+    model.build_vocab(tagged_data)
+    model.train(tagged_data, total_examples=model.corpus_count, epochs=model.epochs)
+
+    model.save(output_file)
+    print ("Model saved")
+
+def create_document_embeddings(pmids, doc2vec_model, output_directory):
+    model = Doc2Vec.load(doc2vec_model)
+
+    for pmid in pmids:
+        np.save(f'{output_directory}/{pmid}', model.docvecs[pmid])
+
+# TREC_pmids, TREC_titles, TREC_abstracts  = process_data_from_tsv("Data/TREC/TSV/sample.tsv")
+
+# createDoc2VecModel(TREC_pmids, TREC_abstracts, "doc2vec.model")
+
+# create_document_embeddings(TREC_pmids, 'doc2vec.model', 'Embeddings/')
