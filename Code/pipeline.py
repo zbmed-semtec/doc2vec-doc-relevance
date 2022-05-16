@@ -185,7 +185,7 @@ def process_data_from_xml(directory_path=None):
     return (pmids, titles, abstracts)
     
 def createDoc2VecModel(pmids, abstracts, output_file):
-    tagged_data = [TaggedDocument(words=word_tokenize(_d[0]), tags=[pmids[i]]) for i, _d in enumerate(abstracts)]
+    tagged_data = [TaggedDocument(words=word_tokenize(_d[0]), tags=[str(pmids[i])]) for i, _d in enumerate(abstracts)]
 
     model = Doc2Vec(vector_size=200, window=5, min_count=1, epochs=5)
     model.build_vocab(tagged_data)
@@ -198,7 +198,7 @@ def create_document_embeddings(pmids, doc2vec_model, output_directory):
     model = Doc2Vec.load(doc2vec_model)
 
     for pmid in pmids:
-        np.save(f'{output_directory}/{pmid}', model.docvecs[pmid])
+        np.save(f'{output_directory}/{pmid}', model.docvecs[str(pmid)])
 
 # TREC_pmids, TREC_titles, TREC_abstracts  = process_data_from_tsv("Data/TREC/TSV/sample.tsv")
 
