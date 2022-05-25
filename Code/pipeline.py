@@ -77,13 +77,15 @@ def data_processing(corpus):
     
     Input:  corpus        ->  DataFrame: Pandas dataframe containing the pmid, title and the abstract of the papers.
 
-    Output: pmids         ->  list: A list of all pubmed ids (string) associated to the paper.
+    Output: pmids         ->  list: A list of all pubmed ids (string) in the corpus.
             titles        ->  list: A list of lists where each sub-list contains the cleaned/processed title (string).
-            abstrats      ->  list: A list of lists where each sub-list contains the cleaned/processed abstract (string).
+            abstracts     ->  list: A list of lists where each sub-list contains the cleaned/processed abstract (string).
+            docs          ->  list: A list of lists where each sub-list contains the cleaned/processed (title + abstract) (string).
     '''
     pmids = []
     titles = []
     abstracts = []
+    docs = []
 
     for index, row in corpus.iterrows():
         # Converting title and abstract into lowercase
@@ -132,7 +134,12 @@ def data_processing(corpus):
         abstract.append(row['abstract'])
         abstracts.append(abstract)
 
-    return (pmids, titles, abstracts)
+        doc = []
+        text = row['title'] + " " + row['abstract']
+        doc.append(text)
+        docs.append(doc)
+
+    return (pmids, titles, abstracts, docs)
 
 # Extract data from tsv file and process it
 def process_data_from_tsv(file_path_in=None):
@@ -141,15 +148,16 @@ def process_data_from_tsv(file_path_in=None):
     
     Input:  file_path_in    ->  string: The filepath of the RELISH or TREC input tsv file.
 
-    Output: pmids           ->  list: A list of all pubmed ids (string) associated to the paper.
+    Output: pmids           ->  list: A list of all pubmed ids (string) in the corpus.
             titles          ->  list: A list of lists where each sub-list contains the cleaned/processed title (string).
-            abstrats        ->  list: A list of lists where each sub-list contains the cleaned/processed abstract (string).
+            abstracts       ->  list: A list of lists where each sub-list contains the cleaned/processed abstract (string).
+            docs            ->  list: A list of lists where each sub-list contains the cleaned/processed (title + abstract) (string).
     '''
     corpus = pd.read_csv(file_path_in, sep='\t')
 
-    pmids, titles, abstracts = data_processing(corpus)
+    pmids, titles, abstracts, docs = data_processing(corpus)
 
-    return (pmids, titles, abstracts)
+    return (pmids, titles, abstracts, docs)
 
 # Extract data from xml file and process it
 def process_data_from_xml(directory_path=None):
@@ -158,9 +166,10 @@ def process_data_from_xml(directory_path=None):
     
     Input:  directory_path    ->  string: The directory path to the RELISH or TREC xml files.
 
-    Output: pmids             ->  list: A list of all pubmed ids (string) associated to the paper.
+    Output: pmids             ->  list: A list of all pubmed ids (string) in the corpus.
             titles            ->  list: A list of lists where each sub-list contains the cleaned/processed title (string).
-            abstrats          ->  list: A list of lists where each sub-list contains the cleaned/processed abstract (string).
+            abstracts         ->  list: A list of lists where each sub-list contains the cleaned/processed abstract (string).
+            docs              ->  list: A list of lists where each sub-list contains the cleaned/processed (title + abstract) (string).
     '''
     # Convert XML to Pandas dataframes
     df_cols = ["PMID", "title", "abstract"]
@@ -180,12 +189,19 @@ def process_data_from_xml(directory_path=None):
         rows.append({"PMID": id, "title": title, "abstract": abstract})
 
     corpus = pd.DataFrame(rows, columns = df_cols)
-    pmids, titles, abstracts = data_processing(corpus)
+    pmids, titles, abstracts, docs = data_processing(corpus)
 
-    return (pmids, titles, abstracts)
+    return (pmids, titles, abstracts, docs)
     
-def createDoc2VecModel(pmids, abstracts, output_file):
-    tagged_data = [TaggedDocument(words=word_tokenize(_d[0]), tags=[str(pmids[i])]) for i, _d in enumerate(abstracts)]
+def createDoc2VecModel(pmids, docs, output_file):
+    '''
+    Create the Doc2Vec model using Gensim for the documents in the corpus.
+    
+    Input:  pmids             ->  list: A list of all pubmed ids (string) in the corpus.
+            docs              ->  list: A list of lists where each sub-list contains the cleaned/processed (title + abstract) (string).
+            output_file       ->  string: File path of the Doc2Vec model generated.
+    '''
+    tagged_data = [TaggedDocument(words=word_tokenize(_d[0]), tags=[str(pmids[i])]) for i, _d in enumerate(docs)]
 
     model = Doc2Vec(vector_size=200, window=5, min_count=1, epochs=5)
     model.build_vocab(tagged_data)
@@ -195,13 +211,15 @@ def createDoc2VecModel(pmids, abstracts, output_file):
     print ("Model saved")
 
 def create_document_embeddings(pmids, doc2vec_model, output_directory):
+    '''
+    Create the document embeddings for the documents in the corpus using the Doc2Vec model.
+    
+    Input:  pmids             ->  list: A list of all pubmed ids (string) in the corpus.
+            doc2vec_model     ->  string: File path of the Doc2Vec model.
+            output_directory  ->  string: The directory path where the document embeddings will be stored.
+    '''
     model = Doc2Vec.load(doc2vec_model)
 
     for pmid in pmids:
         np.save(f'{output_directory}/{pmid}', model.docvecs[str(pmid)])
 
-# TREC_pmids, TREC_titles, TREC_abstracts  = process_data_from_tsv("Data/TREC/TSV/sample.tsv")
-
-# createDoc2VecModel(TREC_pmids, TREC_abstracts, "doc2vec.model")
-
-# create_document_embeddings(TREC_pmids, 'doc2vec.model', 'Embeddings/')
