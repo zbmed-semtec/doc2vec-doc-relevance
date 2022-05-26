@@ -1,4 +1,5 @@
 import pandas as pd
+import pickle
 import re
 import xml.etree.ElementTree as et
 import os
@@ -192,7 +193,8 @@ def process_data_from_xml(directory_path=None):
     pmids, titles, abstracts, docs = data_processing(corpus)
 
     return (pmids, titles, abstracts, docs)
-    
+
+# Create Doc2Vec Model    
 def createDoc2VecModel(pmids, docs, output_file):
     '''
     Create the Doc2Vec model using Gensim for the documents in the corpus.
@@ -210,6 +212,7 @@ def createDoc2VecModel(pmids, docs, output_file):
     model.save(output_file)
     print ("Model saved")
 
+# Generate Document Embeddings
 def create_document_embeddings(pmids, doc2vec_model, output_directory):
     '''
     Create the document embeddings for the documents in the corpus using the Doc2Vec model.
@@ -222,4 +225,62 @@ def create_document_embeddings(pmids, doc2vec_model, output_directory):
 
     for pmid in pmids:
         np.save(f'{output_directory}/{pmid}', model.docvecs[str(pmid)])
+
+# Create similarity matrix for pmids and save it in pickle Python format
+def create_matrix(pmids, doc2vec_model, output_file):
+    '''
+    Create the similarity score matrix for the documents in the corpus and store it in a pickle Python format.
+    
+    Input:  pmids             ->  list: A list of all pubmed ids (string) in the corpus.
+            doc2vec_model     ->  string: File path of the Doc2Vec model.
+            output_file       ->  string: File path of the generated matrix.
+    '''
+    model = Doc2Vec.load(doc2vec_model)
+
+    similarity_matrix = np.zeros((len(pmids), len(pmids)))
+
+    for i, ref_pmid in enumerate(pmids):
+        for j, assessed_pmid in enumerate(pmids):
+            if j < i:
+                continue
+            else:
+                # Determine the cosine similarity score between two documents
+                similarity_matrix[i][j] = model.docvecs.similarity(str(ref_pmid), str(assessed_pmid))
+
+    with open(output_file, 'wb') as f:
+        pickle.dump(similarity_matrix, f)
+
+# Load similarity score matrix
+def load_matrix(matrix_file):
+    '''
+    Load the similarity score matrix for the documents in the corpus stored in the pickle Python file.
+    
+    Input:  matrix_file         ->  string: File path of the similarity score matrix.
+
+    Output: similarity_matrix   ->  numpy.ndarray: A numpy ndarray of the similarity score matrix.
+    '''
+    with open(matrix_file, 'rb') as f:
+        similarity_matrix = pickle.load(f)
+        return similarity_matrix
+
+# Determine the cosine similarity score between two documents
+def get_cosine_similarity_score(ref_pmid, assessed_pmid, pmids, similarity_matrix):
+    '''
+    Determine the cosine similarity score between two documents.
+    
+    Input:  ref_pmid            ->  int: Reference pmid in the corpus.
+            assessed_pmid       ->  int: To-be-assessed pmid in the corpus.
+            pmids               ->  list: A list of all pubmed ids (string) in the corpus.
+            similarity_matrix   ->  numpy.ndarray: A numpy ndarray of the similarity score matrix.
+
+    Output: score               ->  float: Cosine similarity score between the documents against the given pmids.
+    '''
+    ref_pmid_pos = pmids.index(ref_pmid)
+    assessed_pmid_pos = pmids.index(assessed_pmid)
+    if assessed_pmid_pos < ref_pmid_pos:
+        score = similarity_matrix[assessed_pmid_pos][ref_pmid_pos]
+        return score
+    else:
+        score = similarity_matrix[ref_pmid_pos][assessed_pmid_pos]
+        return score
 
