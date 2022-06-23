@@ -1,196 +1,39 @@
-import pandas as pd
-import pickle
-import re
-import xml.etree.ElementTree as et
-import os
 import numpy as np
-from turtle import tracer
-from numpy import full
-from nltk.tokenize import word_tokenize
-from nltk.tokenize.treebank import TreebankWordDetokenizer
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-from nltk import pos_tag
-from nltk.corpus import wordnet
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 
-en_stopwords = set(stopwords.words('english'))
-irrelevant_characters = [":", ";", "\'", "\"", "[", "]"]
-
-lemmatizer = WordNetLemmatizer()
-
-# Convert into lowercase characters
-def convert_lowercase(text):
-    return str(text).lower()
-
-# Remove apostrophes from the text
-def remove_apostrophes(text):
-    text = text.replace("'", "")
-    text = text.replace('"', "")
-    return text
-
-# Tokenization
-def tokenization(text):
-    return word_tokenize(text)
-
-# Remove stopwords
-def remove_stopwords(token):
-    return [item for item in token if item not in en_stopwords]
-
-# Remove irrelevant characters
-def remove_irrelevant_characters(token):
-    return [item for item in token if item not in irrelevant_characters]
-
-# Get POS tags for lemmatization
-def get_wordnet_pos(treebank_tag):
-    if treebank_tag.startswith('J'):
-        return wordnet.ADJ
-    elif treebank_tag.startswith('V'):
-        return wordnet.VERB
-    elif treebank_tag.startswith('N'):
-        return wordnet.NOUN
-    elif treebank_tag.startswith('R'):
-        return wordnet.ADV
-    else:
-        return wordnet.NOUN
-
-def get_pos_tag(word):
-    word_tag = pos_tag([word])
-    return get_wordnet_pos(word_tag[0][1])
-
-# Lemmatization
-def lemmatization(token):
-    return [lemmatizer.lemmatize(word=w,pos=get_pos_tag(w)) for w in token]
-
-# Detokenize the tokens and convert them back to string
-def detokenize(token):
-    return TreebankWordDetokenizer().detokenize(token)
-
-# Remove whitespaces before but the punctuations
-def remove_whitespaces_before_punctuations(text):
-    return re.sub(r'\s([?.!,"](?:\s|$))', r'\1', text)
-
-# Process the title and abstracts in the corpus
-def data_processing(corpus):
+# Retrieves cleaned data from RELISH and TREC npy files
+def process_data_from_tsv(file_path_in=None):
     '''
-    Processes the data in the corpus. To get better document embeddings from doc2vec, the data should first be processed. This includes converting the
-    text into lower-case characters, tokenizing the data, removing irrelevant characters from the data and lemmatizing it.
-    
-    Input:  corpus        ->  DataFrame: Pandas dataframe containing the pmid, title and the abstract of the papers.
+    Retrieves cleaned data from RELISH and TREC npy files, separating each column into their own respective list.
 
-    Output: pmids         ->  list: A list of all pubmed ids (string) in the corpus.
-            titles        ->  list: A list of lists where each sub-list contains the cleaned/processed title (string).
-            abstracts     ->  list: A list of lists where each sub-list contains the cleaned/processed abstract (string).
-            docs          ->  list: A list of lists where each sub-list contains the cleaned/processed (title + abstract) (string).
+    Parameters
+    ----------
+    filepathIn: str
+            The filepath of the RELISH or TREC input npy file.
+
+    Returns
+    -------
+    pmids: list of str
+            A list of all pubmed ids in the corpus.
+    titles: list of str
+            A list of lists where each sub-list contains the words in the cleaned/processed title.
+    abstracts: list of str
+            A list of lists where each sub-list contains the words in the cleaned/processed abstract.
+    docs: list of str
+            A list of lists where each sub-list contains the words in the cleaned/processed document (title + abstract).
     '''
+    doc = np.load(file_path_in, allow_pickle=True)
+
     pmids = []
     titles = []
     abstracts = []
     docs = []
 
-    for index, row in corpus.iterrows():
-        # Converting title and abstract into lowercase
-        row['title'] = convert_lowercase(row['title'])
-        row['abstract'] = convert_lowercase(row['abstract'])
-
-        # Remove apostrophes from the title and abstract
-        row['title'] = remove_apostrophes(row['title'])
-        row['abstract'] = remove_apostrophes(row['abstract'])
-
-        # Tokenizing the title and abstract
-        row['title'] = tokenization(row['title'])
-        row['abstract'] = tokenization(row['abstract'])
-
-        # Remove stopwords from the title and abstract
-        row['title'] = remove_stopwords(row['title'])
-        row['abstract'] = remove_stopwords(row['abstract'])
-
-        # Remove irrelevant characters from the title and abstract
-        row['title'] = remove_irrelevant_characters(row['title'])
-        row['abstract'] = remove_irrelevant_characters(row['abstract'])
-
-        # Lemmatize the tokens in the title and abstract
-        row['title'] = lemmatization(row['title'])
-        row['abstract'] = lemmatization(row['abstract'])
-
-        # Detokenize the tokens in the title and abstract
-        row['title'] = detokenize(row['title'])
-        row['abstract'] = detokenize(row['abstract'])
-
-        # Remove whitespaces before punctuations in the title and abstract
-        row['title'] = remove_whitespaces_before_punctuations(row['title'])
-        row['abstract'] = remove_whitespaces_before_punctuations(row['abstract'])
-
-        # Updates the title and abstract rows in the corpus
-        corpus.at[index,'title'] = row['title']
-        corpus.at[index,'abstract'] = row['abstract']
-
-        pmids.append(row['PMID'])
-
-        title = []
-        title.append(row['title'])
-        titles.append(title)
-
-        abstract = []
-        abstract.append(row['abstract'])
-        abstracts.append(abstract)
-
-        doc = []
-        text = row['title'] + " " + row['abstract']
-        doc.append(text)
-        docs.append(doc)
-
-    return (pmids, titles, abstracts, docs)
-
-# Extract data from tsv file and process it
-def process_data_from_tsv(file_path_in=None):
-    '''
-    Extracts the data from the RELISH and TREC tsv files and processes it.
-    
-    Input:  file_path_in    ->  string: The filepath of the RELISH or TREC input tsv file.
-
-    Output: pmids           ->  list: A list of all pubmed ids (string) in the corpus.
-            titles          ->  list: A list of lists where each sub-list contains the cleaned/processed title (string).
-            abstracts       ->  list: A list of lists where each sub-list contains the cleaned/processed abstract (string).
-            docs            ->  list: A list of lists where each sub-list contains the cleaned/processed (title + abstract) (string).
-    '''
-    corpus = pd.read_csv(file_path_in, sep='\t')
-
-    pmids, titles, abstracts, docs = data_processing(corpus)
-
-    return (pmids, titles, abstracts, docs)
-
-# Extract data from xml file and process it
-def process_data_from_xml(directory_path=None):
-    '''
-    Extracts the data from the RELISH and TREC xml files, converts it into the Pandas dataframes and processes it.
-    
-    Input:  directory_path    ->  string: The directory path to the RELISH or TREC xml files.
-
-    Output: pmids             ->  list: A list of all pubmed ids (string) in the corpus.
-            titles            ->  list: A list of lists where each sub-list contains the cleaned/processed title (string).
-            abstracts         ->  list: A list of lists where each sub-list contains the cleaned/processed abstract (string).
-            docs              ->  list: A list of lists where each sub-list contains the cleaned/processed (title + abstract) (string).
-    '''
-    # Convert XML to Pandas dataframes
-    df_cols = ["PMID", "title", "abstract"]
-    rows = []
-
-    for filename in os.listdir(directory_path):
-        if not filename.endswith('.xml'): continue
-        fullname = os.path.join(directory_path, filename)
-        xtree = et.parse(fullname)
-        xroot = xtree.getroot()
-
-        id = xroot[0].find("id").text.strip()
-        text = xroot[0].findall(".//text")
-        title = text[0].text.strip()
-        abstract = text[1].text.strip()
-
-        rows.append({"PMID": id, "title": title, "abstract": abstract})
-
-    corpus = pd.DataFrame(rows, columns = df_cols)
-    pmids, titles, abstracts, docs = data_processing(corpus)
+    for line in doc:
+        pmids.append(np.ndarray.tolist(line[0]))
+        titles.append(np.ndarray.tolist(line[1]))
+        abstracts.append(np.ndarray.tolist(line[2]))
+        docs.append(np.ndarray.tolist(line[1]) + np.ndarray.tolist(line[2]))
 
     return (pmids, titles, abstracts, docs)
 
@@ -198,12 +41,17 @@ def process_data_from_xml(directory_path=None):
 def createDoc2VecModel(pmids, docs, output_file):
     '''
     Create the Doc2Vec model using Gensim for the documents in the corpus.
-    
-    Input:  pmids             ->  list: A list of all pubmed ids (string) in the corpus.
-            docs              ->  list: A list of lists where each sub-list contains the cleaned/processed (title + abstract) (string).
-            output_file       ->  string: File path of the Doc2Vec model generated.
+
+    Parameters
+    ----------
+    pmids: list of str
+            A list of all pubmed ids in the corpus.
+    docs: list of str
+            A list of lists where each sub-list contains the words in the cleaned/processed document (title + abstract).
+    output_file: str
+            File path of the Doc2Vec model generated.
     '''
-    tagged_data = [TaggedDocument(words=word_tokenize(_d[0]), tags=[str(pmids[i])]) for i, _d in enumerate(docs)]
+    tagged_data = [TaggedDocument(words=_d, tags=[str(pmids[i])]) for i, _d in enumerate(docs)]
 
     model = Doc2Vec(vector_size=200, window=5, min_count=1, epochs=5)
     model.build_vocab(tagged_data)
@@ -216,71 +64,18 @@ def createDoc2VecModel(pmids, docs, output_file):
 def create_document_embeddings(pmids, doc2vec_model, output_directory):
     '''
     Create the document embeddings for the documents in the corpus using the Doc2Vec model.
-    
-    Input:  pmids             ->  list: A list of all pubmed ids (string) in the corpus.
-            doc2vec_model     ->  string: File path of the Doc2Vec model.
-            output_directory  ->  string: The directory path where the document embeddings will be stored.
+
+    Parameters
+    ----------
+    pmids: list of str
+            A list of all pubmed ids in the corpus.
+    doc2vec_model: str
+            File path of the Doc2Vec model.
+    output_directory: str
+            The directory path where the document embeddings will be stored.
     '''
     model = Doc2Vec.load(doc2vec_model)
 
     for pmid in pmids:
         np.save(f'{output_directory}/{pmid}', model.docvecs[str(pmid)])
-
-# Create similarity matrix for pmids and save it in pickle Python format
-def create_matrix(pmids, doc2vec_model, output_file):
-    '''
-    Create the similarity score matrix for the documents in the corpus and store it in a pickle Python format.
-    
-    Input:  pmids             ->  list: A list of all pubmed ids (string) in the corpus.
-            doc2vec_model     ->  string: File path of the Doc2Vec model.
-            output_file       ->  string: File path of the generated matrix.
-    '''
-    model = Doc2Vec.load(doc2vec_model)
-
-    similarity_matrix = np.zeros((len(pmids), len(pmids)))
-
-    for i, ref_pmid in enumerate(pmids):
-        for j, assessed_pmid in enumerate(pmids):
-            if j < i:
-                continue
-            else:
-                # Determine the cosine similarity score between two documents
-                similarity_matrix[i][j] = model.docvecs.similarity(str(ref_pmid), str(assessed_pmid))
-
-    with open(output_file, 'wb') as f:
-        pickle.dump(similarity_matrix, f)
-
-# Load similarity score matrix
-def load_matrix(matrix_file):
-    '''
-    Load the similarity score matrix for the documents in the corpus stored in the pickle Python file.
-    
-    Input:  matrix_file         ->  string: File path of the similarity score matrix.
-
-    Output: similarity_matrix   ->  numpy.ndarray: A numpy ndarray of the similarity score matrix.
-    '''
-    with open(matrix_file, 'rb') as f:
-        similarity_matrix = pickle.load(f)
-        return similarity_matrix
-
-# Determine the cosine similarity score between two documents
-def get_cosine_similarity_score(ref_pmid, assessed_pmid, pmids, similarity_matrix):
-    '''
-    Determine the cosine similarity score between two documents.
-    
-    Input:  ref_pmid            ->  int: Reference pmid in the corpus.
-            assessed_pmid       ->  int: To-be-assessed pmid in the corpus.
-            pmids               ->  list: A list of all pubmed ids (string) in the corpus.
-            similarity_matrix   ->  numpy.ndarray: A numpy ndarray of the similarity score matrix.
-
-    Output: score               ->  float: Cosine similarity score between the documents against the given pmids.
-    '''
-    ref_pmid_pos = pmids.index(ref_pmid)
-    assessed_pmid_pos = pmids.index(assessed_pmid)
-    if assessed_pmid_pos < ref_pmid_pos:
-        score = similarity_matrix[assessed_pmid_pos][ref_pmid_pos]
-        return score
-    else:
-        score = similarity_matrix[ref_pmid_pos][assessed_pmid_pos]
-        return score
 
