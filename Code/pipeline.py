@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 
 # Retrieves cleaned data from RELISH and TREC npy files
@@ -58,7 +59,6 @@ def createDoc2VecModel(pmids, docs, output_file):
     model.train(tagged_data, total_examples=model.corpus_count, epochs=model.epochs)
 
     model.save(output_file)
-    print ("Model saved")
 
 # Generate Document Embeddings
 def create_document_embeddings(pmids, doc2vec_model, output_directory):
@@ -78,4 +78,36 @@ def create_document_embeddings(pmids, doc2vec_model, output_directory):
 
     for pmid in pmids:
         np.save(f'{output_directory}/{pmid}', model.docvecs[str(pmid)])
+
+# Adds the 4th column to the relevance matrix csv file, containing the cosine similarity of the respective reference and assessed pmids.  
+def update_relevance_matrix(input_file, doc2vec_model, output_file): 
+    '''
+    Updates the relevance matrix csv file by adding the 4th column, consisting of the cosine similarity between the respective pmids.
+
+    Parameters
+    ----------
+    input_file: str
+            File path to the Relevance Matrix CSV file.
+    doc2vec_model: str
+            File path of the Doc2Vec model.
+    output_file: str
+            Path where the output csv file will be stored.
+    '''       
+    matrix_df = pd.read_csv(input_file)
+    matrix_df["Cosine Similarity"] = ""
+
+    model = Doc2Vec.load(doc2vec_model)
+
+    for index, row in matrix_df.iterrows():
+        ref_pmid = row["PMID Reference"]
+        assessed_pmid = row["PMID Assessed"]
+
+        try:
+            row["Cosine Similarity"] = round(model.docvecs.similarity(str(ref_pmid), str(assessed_pmid)), 2)
+        except:
+            row["Cosine Similarity"] = ""
+
+        matrix_df.at[index,'Cosine Similarity'] = row['Cosine Similarity']
+                
+    matrix_df.to_csv(output_file, index=False)
 
