@@ -94,6 +94,8 @@ def update_relevance_matrix(input_file, doc2vec_model, output_file):
             Path where the output csv file will be stored.
     '''       
     matrix_df = pd.read_csv(input_file)
+
+    # Adds the empty 4th column to the file
     matrix_df["Cosine Similarity"] = ""
 
     model = Doc2Vec.load(doc2vec_model)
@@ -103,10 +105,13 @@ def update_relevance_matrix(input_file, doc2vec_model, output_file):
         assessed_pmid = row["PMID Assessed"]
 
         try:
+            # Determine the cosine similarity of the ref and assessed pmids and add to the 4th column
             row["Cosine Similarity"] = round(model.docvecs.similarity(str(ref_pmid), str(assessed_pmid)), 2)
         except:
+            # Leave the 4th column empty if the ref or assessed pmid not found in the dataset
             row["Cosine Similarity"] = ""
 
+        # Make changes in the original dataframe
         matrix_df.at[index,'Cosine Similarity'] = row['Cosine Similarity']
                 
     matrix_df.to_csv(output_file, index=False)
