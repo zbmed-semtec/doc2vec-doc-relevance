@@ -82,7 +82,8 @@ def create_document_embeddings(pmids, doc2vec_model, output_directory):
 # Adds the 4th column to the relevance matrix csv file, containing the cosine similarity of the respective reference and assessed pmids.  
 def update_relevance_matrix(input_file, doc2vec_model, output_file): 
     '''
-    Updates the relevance matrix csv file by adding the 4th column, consisting of the cosine similarity between the respective pmids.
+    Creates the TSV file by updating the relevance matrix csv file and adds the 4th column, 
+    consisting of the cosine similarity between the respective pmids.
 
     Parameters
     ----------
@@ -91,7 +92,7 @@ def update_relevance_matrix(input_file, doc2vec_model, output_file):
     doc2vec_model: str
             File path of the Doc2Vec model.
     output_file: str
-            Path where the output csv file will be stored.
+            Path where the output TSV file will be stored.
     '''       
     matrix_df = pd.read_csv(input_file)
 
@@ -114,5 +115,6 @@ def update_relevance_matrix(input_file, doc2vec_model, output_file):
         # Make changes in the original dataframe
         matrix_df.at[index,'Cosine Similarity'] = row['Cosine Similarity']
                 
-    matrix_df.to_csv(output_file, index=False)
+    matrix_df.to_csv(output_file, index=False, sep="\t")
+
 
