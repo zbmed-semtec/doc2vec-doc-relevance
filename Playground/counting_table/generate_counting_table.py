@@ -3,9 +3,11 @@ import math
 import numpy as np
 import pandas as pd
 
-from matplotlib import pyplot as plt 
+import matplotlib.pyplot as plt 
 
-def load_relevance_matrix(input_path: str):
+from typing import Union
+
+def load_relevance_matrix(input_path: str) -> pd.DataFrame:
     """
     Reads a .CSV file containing the relevance matrix for RELISH. Three columns
     are needed: PMID 1, PMID 2 and Relevance Assessment.
@@ -22,11 +24,11 @@ def load_relevance_matrix(input_path: str):
         Dataframe with 4 columns: PMID 1, PMID 2, Relevance Assessment
         and Cosine Similarity.
     """
-    data = pd.read_csv(input_path, delimiter="\t")
+    data = pd.read_csv(input_path)
 
     return data
 
-def random_cosine_similarities(data: pd.DataFrame):
+def random_cosine_similarities(data: pd.DataFrame) -> pd.DataFrame:
     """
     Generates a random relevance matrix. It populates the forth column (the
     Cosine Similarity) with normally distributed random numbers. 
@@ -67,7 +69,7 @@ def random_cosine_similarities(data: pd.DataFrame):
     
     return data
 
-def count_entries(data: pd.DataFrame, interval: float):
+def count_entries(data: pd.DataFrame, interval: float) -> Union[dict, str]:
     """
     Counts the number of Relevance Assessment for a given value of Cosine
     Similarity.
@@ -93,7 +95,7 @@ def count_entries(data: pd.DataFrame, interval: float):
 
     return counter, count_explanation
 
-def create_counting_table(data: pd.DataFrame):
+def create_counting_table(data: pd.DataFrame) -> pd.DataFrame:
     """
     Creates the "counting table" from a given Relevance matrix.
     Parameters
@@ -122,7 +124,7 @@ def create_counting_table(data: pd.DataFrame):
         
     return counting_df
 
-def save_table(counting_df: pd.DataFrame, output_path: str):
+def save_table(counting_df: pd.DataFrame, output_path: str) -> None:
     """
     Saves the counting table into .TSV format.
     Parameters
@@ -134,3 +136,32 @@ def save_table(counting_df: pd.DataFrame, output_path: str):
         Output path to where the counting table will be saved.
     """
     counting_df.to_csv(output_path, index=False, sep="\t")
+
+def plot_graph(input_path: str, output_path: str) -> None:
+    """
+    Plots the graph of "Relevance counting" against the "Cosine intervals"
+    for the number of 2s, 1s and 0s in the counting table.
+    Parameters
+    ----------
+    input_path : str
+        Input path to the .TSV file containing the counting table.
+    output_path : str
+        Output path to where the plot will be saved.
+    """
+    data = pd.read_csv(input_path, delimiter="\t", usecols=["Cosine Interval", "2s", "1s", "0s"])
+    intervals = data["Cosine Interval"].values.tolist()
+    two_points = data["2s"].values.tolist()
+    one_points = data["1s"].values.tolist()
+    zero_points = data["0s"].values.tolist()
+
+    plt.plot(intervals, two_points, 'r', label='2 counts')  
+    plt.plot(intervals, one_points, 'b', label='1 counts') 
+    plt.plot(intervals, zero_points, 'g', label='0 counts')
+
+    plt.xlabel("Cosine intervals")
+    plt.ylabel("Relevance counting")
+
+    plt.legend()
+    plt.savefig(output_path)
+    plt.show()
+
