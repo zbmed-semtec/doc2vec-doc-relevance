@@ -5,8 +5,6 @@ import pandas as pd
 
 import matplotlib.pyplot as plt 
 
-from typing import Union
-
 def load_relevance_matrix(input_path: str) -> pd.DataFrame:
     """
     Reads a .CSV file containing the relevance matrix for RELISH. Three columns
@@ -69,7 +67,7 @@ def random_cosine_similarities(data: pd.DataFrame) -> pd.DataFrame:
     
     return data
 
-def count_entries(data: pd.DataFrame, interval: float) -> Union[dict, str]:
+def count_entries(data: pd.DataFrame, interval: float) -> dict:
     """
     Counts the number of Relevance Assessment for a given value of Cosine
     Similarity.
@@ -84,16 +82,11 @@ def count_entries(data: pd.DataFrame, interval: float) -> Union[dict, str]:
     -------
     counter: dict
         Dictionary containing the counts for each Relevance Assessment
-    count_explanation: str
-        Counting Explanation by specifying the row numbers from the input 
-        dataframe
     """
     filtered_df = data[data["Cosine Similarity"] == interval]["Relevance Assessment"]
     counter = {0: sum(filtered_df == 0), 1: sum(filtered_df == 1), 2: sum(filtered_df == 2)}
 
-    count_explanation = "Rows: " + ", ".join(str(e) for e in list(filtered_df.index))
-
-    return counter, count_explanation
+    return counter
 
 def create_counting_table(data: pd.DataFrame) -> pd.DataFrame:
     """
@@ -106,21 +99,18 @@ def create_counting_table(data: pd.DataFrame) -> pd.DataFrame:
     Returns
     -------
     counting_df: pd.DataFrame
-        DataFrame of the counting table generated with five columns: Cosine
-        Interval, 2s, 1s, 0s and Counting Explanation.
+        DataFrame of the counting table generated with four columns: Cosine
+        Interval, 2s, 1s, 0s.
     """
-    counting_df = pd.DataFrame({"Cosine Interval":  np.round(np.linspace(0, 1, 101), 2).tolist(), "2s": 0, "1s": 0, "0s": 0, 
-                                "Counting Explanation": ""})
+    counting_df = pd.DataFrame({"Cosine Interval":  np.round(np.linspace(0, 1, 101), 2).tolist(), "2s": 0, "1s": 0, "0s": 0})
 
     for i, row in counting_df.iterrows():
         interval = row["Cosine Interval"]
-        interval_counts, count_explanation = count_entries(data, interval)
+        interval_counts = count_entries(data, interval)
 
         counting_df.at[i, "2s"] = interval_counts[2]
         counting_df.at[i, "1s"] = interval_counts[1]
         counting_df.at[i, "0s"] = interval_counts[0]
-        
-        counting_df.at[i, "Counting Explanation"] = count_explanation
         
     return counting_df
 
