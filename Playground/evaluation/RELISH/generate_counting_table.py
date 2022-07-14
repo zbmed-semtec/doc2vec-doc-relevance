@@ -14,13 +14,12 @@ def load_relevance_matrix(input_path: str) -> pd.DataFrame:
     Parameters
     ----------
     input_path : str
-        File path to the Relevance Matrix. It is used to populate the forth
+        File path to the Relevance Matrix. It will be used to populate the fourth
         column. 
     Returns
     -------
     data: pd.DataFrame
-        Dataframe with 4 columns: PMID 1, PMID 2, Relevance Assessment
-        and Cosine Similarity.
+        Dataframe with 3 columns: PMID 1, PMID 2, Relevance Assessment.
     """
     data = pd.read_csv(input_path)
 
