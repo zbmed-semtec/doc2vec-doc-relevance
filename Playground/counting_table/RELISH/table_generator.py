@@ -9,8 +9,8 @@ counting_table = ct.create_counting_table(data)
 
 print(counting_table)
 
-output_path = "Playground/counting_table/counting_table.tsv"
+output_path = "Playground/counting_table/RELISH/counting_table.tsv"
 ct.save_table(counting_table, output_path)
 
-plot_path = "Playground/counting_table/output_plot.png"
+plot_path = "Playground/counting_table/RELISH/output_plot.png"
 ct.plot_graph(output_path, plot_path)
