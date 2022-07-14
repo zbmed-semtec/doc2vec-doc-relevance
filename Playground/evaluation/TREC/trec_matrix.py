@@ -1,7 +1,6 @@
 import itertools
 import pandas as pd
 
-
 def load_TREC_data(input_path: str) -> pd.DataFrame:
     trec_df = pd.read_csv(input_path, delimiter="\t", names = ["Topic", "Zeros", "PMID", "Relevance"], usecols=["Topic", "PMID", "Relevance"])
 
@@ -36,8 +35,6 @@ def determine_group(relevance_pairs: list) -> list:
 
     return relevance_pairs
     
-
-
 def prepare_data(trec_df: pd.DataFrame, topics: list) -> list:
     output_data = []
 
