@@ -76,7 +76,7 @@ def save_table(counting_df: pd.DataFrame, output_path: str) -> None:
     counting_df.to_csv(output_path, index=False, sep="\t")
 
 def plot_graph(input_path: str, output_path: str) -> None:
-    data = pd.read_csv(input_path, delimiter="\t", usecols=["Cosine Interval", "2s", "1s", "0s"])
+    data = pd.read_csv(input_path, delimiter="\t", usecols=["Cosine Interval", "As", "Bs", "Cs", "Ds", "Es", "Fs"])
     intervals = data["Cosine Interval"].values.tolist()
 
     a_points = data["As"].values.tolist()
@@ -85,6 +85,8 @@ def plot_graph(input_path: str, output_path: str) -> None:
     d_points = data["Ds"].values.tolist()
     e_points = data["Es"].values.tolist()
     f_points = data["Fs"].values.tolist()
+
+    plt.figure()
 
     plt.plot(intervals, a_points, 'r', label='A counts')  
     plt.plot(intervals, b_points, 'b', label='B counts') 
@@ -103,10 +105,10 @@ def plot_graph(input_path: str, output_path: str) -> None:
 def create_counting_table_by_topic(data: pd.DataFrame) -> None:
     topics = get_unique_topics(data)
 
-    output_path = "Playground/evaluation/TREC/tsv_files/"
-    plot_path = "Playground/evaluation/TREC/plots/"
-
     for topic in topics:
+        output_path = "Playground/evaluation/TREC/tsv_files/"
+        plot_path = "Playground/evaluation/TREC/plots/"
+
         topic_df = data[data['Topic'] == topic]
         counting_df = create_counting_table(topic_df)
 
@@ -115,4 +117,7 @@ def create_counting_table_by_topic(data: pd.DataFrame) -> None:
 
         plot_path +=  "output_plot_by_topic_" + str(topic) + ".png"
         plot_graph(output_path, plot_path)
+
+        statement = "Counting completed for topic " + str(topic)
+        print (statement)
 
