@@ -79,41 +79,70 @@ def create_document_embeddings(pmids, doc2vec_model, output_directory):
     for pmid in pmids:
         np.save(f'{output_directory}/{pmid}', model.docvecs[str(pmid)])
 
-# Adds the 4th column to the relevance matrix csv file, containing the cosine similarity of the respective reference and assessed pmids.  
-def update_relevance_matrix(input_file, doc2vec_model, output_file): 
+# Adds the 4th column to the relevance matrix file, containing the cosine similarity of the respective reference and assessed pmids.  
+def update_relevance_matrix(input_file, doc2vec_model, output_file, dataset): 
     '''
-    Creates the TSV file by updating the relevance matrix csv file and adds the 4th column, 
+    Creates the TSV file by updating the relevance matrix file and adds the 4th column, 
     consisting of the cosine similarity between the respective pmids.
 
     Parameters
     ----------
     input_file: str
-            File path to the Relevance Matrix CSV file.
+            File path to the Relevance Matrix file.
     doc2vec_model: str
             File path of the Doc2Vec model.
     output_file: str
             Path where the output TSV file will be stored.
-    '''       
-    matrix_df = pd.read_csv(input_file)
+    dataset: str
+            TREC or RELISH representing the dataset taken into consideration.
+    '''
+    if dataset == "RELISH":
+        # Read the RELISH Relevance Matrix csv file       
+        matrix_df = pd.read_csv(input_file)
 
-    # Adds the empty 4th column to the file
-    matrix_df["Cosine Similarity"] = ""
+        # Adds the empty 4th column to the file
+        matrix_df["Cosine Similarity"] = ""
 
-    model = Doc2Vec.load(doc2vec_model)
+        # Load the Doc2Vec model for RELISH
+        model = Doc2Vec.load(doc2vec_model)
 
-    for index, row in matrix_df.iterrows():
-        ref_pmid = row["PMID Reference"]
-        assessed_pmid = row["PMID Assessed"]
+        for index, row in matrix_df.iterrows():
+            ref_pmid = row["PMID Reference"]
+            assessed_pmid = row["PMID Assessed"]
 
-        try:
-            # Determine the cosine similarity of the ref and assessed pmids and add to the 4th column
-            row["Cosine Similarity"] = round(model.docvecs.similarity(str(ref_pmid), str(assessed_pmid)), 2)
-        except:
-            # Leave the 4th column empty if the ref or assessed pmid not found in the dataset
-            row["Cosine Similarity"] = ""
+            try:
+                # Determine the cosine similarity of the ref and assessed pmids and add to the 4th column
+                row["Cosine Similarity"] = round(model.docvecs.similarity(str(ref_pmid), str(assessed_pmid)), 2)
+            except:
+                # Leave the 4th column empty if the ref or assessed pmid not found in the dataset
+                row["Cosine Similarity"] = ""
 
-        # Make changes in the original dataframe
-        matrix_df.at[index,'Cosine Similarity'] = row['Cosine Similarity']
+            # Make changes in the original dataframe
+            matrix_df.at[index,'Cosine Similarity'] = row['Cosine Similarity']
+
+    elif dataset == "TREC":
+        # Read the TREC Relevance Matrix tsv file
+        matrix_df = pd.read_csv(input_file, delimiter='\t')
+
+        # Adds the empty 4th column to the file
+        matrix_df["Cosine Similarity"] = ""
+
+        # Load the Doc2Vec model for TREC
+        model = Doc2Vec.load(doc2vec_model)
+
+        for index, row in matrix_df.iterrows():
+            ref_pmid = row["PMID1"]
+            assessed_pmid = row["PMID2"]
+
+            try:
+                # Determine the cosine similarity of the ref and assessed pmids and add to the 4th column
+                row["Cosine Similarity"] = round(model.docvecs.similarity(str(ref_pmid), str(assessed_pmid)), 2)
+            except:
+                # Leave the 4th column empty if the ref or assessed pmid not found in the dataset
+                row["Cosine Similarity"] = ""
+
+            # Make changes in the original dataframe
+            matrix_df.at[index,'Cosine Similarity'] = row['Cosine Similarity']
                 
     matrix_df.to_csv(output_file, index=False, sep="\t")
 
