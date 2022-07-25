@@ -126,7 +126,7 @@ def save_table(counting_df: pd.DataFrame, output_path: str) -> None:
     """
     counting_df.to_csv(output_path, index=False, sep="\t")
 
-def plot_graph(input_path: str, output_path: str) -> None:
+def plot_graph(input_path: str, output_path: str, normalize: bool = False) -> None:
     """
     Plots the graph of "Relevance counting" against the "Cosine intervals"
     for the number of 2s, 1s and 0s in the counting table.
@@ -136,6 +136,8 @@ def plot_graph(input_path: str, output_path: str) -> None:
         Input path to the .TSV file containing the counting table.
     output_path : str
         Output path to where the plot will be saved.
+    normalize : bool
+        Boolean to determine whether the data should be normalized or not.
     """
     data = pd.read_csv(input_path, delimiter="\t", usecols=["Cosine Interval", "2s", "1s", "0s"])
     intervals = data["Cosine Interval"].values.tolist()
@@ -143,9 +145,14 @@ def plot_graph(input_path: str, output_path: str) -> None:
     one_points = data["1s"].values.tolist()
     zero_points = data["0s"].values.tolist()
 
-    plt.plot(intervals, two_points, 'r', label='2 counts')  
-    plt.plot(intervals, one_points, 'b', label='1 counts') 
-    plt.plot(intervals, zero_points, 'g', label='0 counts')
+    if normalize:
+        plt.plot(intervals, [i/sum(two_points) for i in two_points], 'r', label='2 counts')  
+        plt.plot(intervals, [i/sum(one_points) for i in one_points], 'b', label='1 counts') 
+        plt.plot(intervals, [i/sum(zero_points) for i in zero_points], 'g', label='0 counts')
+    else:
+        plt.plot(intervals, two_points, 'r', label='2 counts')  
+        plt.plot(intervals, one_points, 'b', label='1 counts') 
+        plt.plot(intervals, zero_points, 'g', label='0 counts')
 
     plt.xlabel("Cosine intervals")
     plt.ylabel("Relevance counting")

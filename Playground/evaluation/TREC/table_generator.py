@@ -1,6 +1,6 @@
 import generate_counting_table as ct
 
-input_path = "Data/TREC/Relevance_Matrix/trec_relevance_matrix.tsv"
+input_path = "Data/TREC/Relevance_Matrix/trec_simplified_relevance_matrix.tsv"
 
 # Comment out this step if table exists with cosine similarities
 data = ct.load_relevance_matrix(input_path)
