@@ -1,11 +1,12 @@
 import itertools
 import pandas as pd
 
-def load_TREC_data(input_path: str) -> pd.DataFrame:
+def load_TREC_data(input_path: str, is_simplified: bool = True) -> pd.DataFrame:
     trec_df = pd.read_csv(input_path, delimiter="\t", names = ["Topic", "Zeros", "PMID", "Relevance"], usecols=["Topic", "PMID", "Relevance"])
 
-    # Replace all relevance with value of 2 with the value of 1
-    trec_df.loc[trec_df["Relevance"] == 2, "Relevance"] = 1
+    # Replace all relevance with value of 2 with the value of 1 (only when determining the simplified pairs for TREC)
+    if is_simplified:
+        trec_df.loc[trec_df["Relevance"] == 2, "Relevance"] = 1
 
     return trec_df
 
@@ -29,7 +30,7 @@ def determine_group(relevance_pairs: list) -> list:
 
     return relevance_pairs
     
-def prepare_data(trec_df: pd.DataFrame, topics: list) -> list:
+def prepare_data(trec_df: pd.DataFrame, topics: list, is_simplified: bool = True) -> list:
     output_data = []
 
     # Iterate over topics
@@ -45,8 +46,9 @@ def prepare_data(trec_df: pd.DataFrame, topics: list) -> list:
         relevance_pairs = topic_df["Relevance"].values.tolist()
         relevance_pairs = list(itertools.combinations(relevance_pairs, 2))
 
-        # Add group to relevance assessment pairs in the relevance_pairs list
-        relevance_pairs = determine_group(relevance_pairs)
+        # Add group to relevance assessment pairs in the relevance_pairs list (only when determining the simplified pairs for TREC)
+        if is_simplified:
+            relevance_pairs = determine_group(relevance_pairs)
 
         # Combine the above two list element-wise
         combined_pairs = [i + j for i, j in zip(pmid_pairs, relevance_pairs)]
@@ -61,8 +63,12 @@ def prepare_data(trec_df: pd.DataFrame, topics: list) -> list:
 
     return output_data
 
-def save_file(output_data: list, output_path: str) -> None:
-    output_df = pd.DataFrame(output_data, columns=["Topic", "PMID1", "PMID2", "SRel1", "SRel2", "Group"])
+def save_file(output_data: list, output_path: str, is_simplified: bool = True) -> None:
+    if is_simplified:
+        output_df = pd.DataFrame(output_data, columns=["Topic", "PMID1", "PMID2", "SRel1", "SRel2", "Group"])
+    else:
+        output_df = pd.DataFrame(output_data, columns=["Topic", "PMID1", "PMID2", "Rel1", "Rel2"])
+    
     output_df.to_csv(output_path, index=False, sep="\t")
 
 
