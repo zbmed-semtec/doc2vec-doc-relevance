@@ -82,30 +82,30 @@ def create_document_embeddings(pmids, doc2vec_model, output_directory):
 # Adds the 4th column to the relevance matrix file, containing the cosine similarity of the respective reference and assessed pmids.  
 def update_relevance_matrix(input_file, doc2vec_model, output_file, dataset): 
     '''
-    Creates the TSV file by updating the relevance matrix file and adds the 4th column, 
+    Updates the relevance matrix tsv file and adds the 4th column, 
     consisting of the cosine similarity between the respective pmids.
 
     Parameters
     ----------
     input_file: str
-            File path to the Relevance Matrix file.
+            File path to the Relevance Matrix tsv file.
     doc2vec_model: str
             File path of the Doc2Vec model.
     output_file: str
-            Path where the output TSV file will be stored.
+            Path where the output tsv file will be stored.
     dataset: str
             TREC or RELISH representing the dataset taken into consideration.
     '''
+    # Read the Relevance Matrix tsv file
+    matrix_df = pd.read_csv(input_file, delimiter='\t')
+
+    # Adds the empty 4th column to the file
+    matrix_df["Cosine Similarity"] = ""
+
+    # Load the Doc2Vec model for RELISH/TREC
+    model = Doc2Vec.load(doc2vec_model)
+
     if dataset == "RELISH":
-        # Read the RELISH Relevance Matrix csv file       
-        matrix_df = pd.read_csv(input_file)
-
-        # Adds the empty 4th column to the file
-        matrix_df["Cosine Similarity"] = ""
-
-        # Load the Doc2Vec model for RELISH
-        model = Doc2Vec.load(doc2vec_model)
-
         for index, row in matrix_df.iterrows():
             ref_pmid = row["PMID Reference"]
             assessed_pmid = row["PMID Assessed"]
@@ -121,15 +121,6 @@ def update_relevance_matrix(input_file, doc2vec_model, output_file, dataset):
             matrix_df.at[index,'Cosine Similarity'] = row['Cosine Similarity']
 
     elif dataset == "TREC":
-        # Read the TREC Relevance Matrix tsv file
-        matrix_df = pd.read_csv(input_file, delimiter='\t')
-
-        # Adds the empty 4th column to the file
-        matrix_df["Cosine Similarity"] = ""
-
-        # Load the Doc2Vec model for TREC
-        model = Doc2Vec.load(doc2vec_model)
-
         for index, row in matrix_df.iterrows():
             ref_pmid = row["PMID1"]
             assessed_pmid = row["PMID2"]
