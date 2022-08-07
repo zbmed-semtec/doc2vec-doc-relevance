@@ -5,7 +5,7 @@ from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from typing import Union, List
 
 # Retrieves cleaned data from RELISH and TREC npy files
-def process_data_from_tsv(file_path_in: str = None) -> Union[List[str], List[List[str]], List[List[str]], List[List[str]]] :
+def process_data_from_npy(file_path_in: str = None) -> Union[List[str], List[List[str]], List[List[str]], List[List[str]]] :
     """
     Retrieves cleaned data from RELISH and TREC npy files, separating each column 
     into their own respective list.
