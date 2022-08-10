@@ -58,7 +58,10 @@ def count_entries(data: pd.DataFrame, interval: float, dataset: str = "RELISH", 
 
     # If data is from the RELISH or TREC-repurposed file
     if ((dataset == "RELISH") and (repurposed == False)) or ((dataset == "TREC") and (repurposed == True)):
-        filtered_df = data[data["Cosine Similarity"] == interval]["Relevance Assessment"]
+        if dataset == "RELISH":
+            filtered_df = data[data["Cosine Similarity"] == interval]["Relevance Assessment"]
+        elif dataset == "TREC":
+            filtered_df = data[data["Cosine Similarity"] == interval]["Rel-d2d"]
         counter = {0: sum(filtered_df == 0), 1: sum(filtered_df == 1), 2: sum(filtered_df == 2)}
 
     # If data is from the TREC-simplified file
