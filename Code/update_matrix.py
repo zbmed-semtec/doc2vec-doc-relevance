@@ -19,7 +19,10 @@ def update_relevance_matrix(input_file: str, model: Doc2Vec, output_file: str, d
             TREC or RELISH representing the dataset taken into consideration.
     """
     # Read the Relevance Matrix tsv file
-    matrix_df = pd.read_csv(input_file, delimiter='\t')
+    if dataset == "RELISH":
+        matrix_df = pd.read_csv(input_file, delimiter='\t', names=['PMID Reference', 'PMID Assessed', 'Relevance Assessment'])
+    elif dataset == "TREC":
+        matrix_df = pd.read_csv(input_file, delimiter='\t')
 
     # Adds the empty 4th column to the file
     matrix_df["Cosine Similarity"] = ""

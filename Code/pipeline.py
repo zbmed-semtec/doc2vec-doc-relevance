@@ -27,7 +27,7 @@ for index, row in hp_df.iterrows():
     print ("Doc2Vec Model Generated", flush=True)
 
     # Update Relevance Matrix
-    um.update_relevance_matrix("Data/RELISH/Relevance_Matrix/relish_relevance_matrix.tsv", 
+    um.update_relevance_matrix("Data/RELISH/Relevance_Matrix/RELISH.tsv", 
                             model, 
                             "Data/RELISH/Relevance_Matrix/relish_relevance_matrix_updated.tsv", 
                             "RELISH")
