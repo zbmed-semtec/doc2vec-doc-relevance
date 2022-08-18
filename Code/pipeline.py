@@ -6,7 +6,7 @@ from distribution_analysis import ROC_curve as rc
 
 # Generate hyperparameter combinations and save to tsv file (Uncomment if tsv file not found)
 hp_df = hp.generate_hyperparameters(hp.params_d2v)
-hp.save_file(hp_df, "Data/Hyperparameter/relish_hyperparameter_combinations_1.tsv")
+hp.save_file(hp_df, "Data/Hyperparameter/relish_hyperparameter_combinations.tsv")
 print ("Hyperparameter Combinations Generated", flush=True)
 
 # Retrieves cleaned data from .npy file 
@@ -18,7 +18,7 @@ for index, row in hp_df.iterrows():
     print("Iterating Row: {}".format(index), flush=True)
 
     # Get hyper-parameters for the first row with AUC value = 0
-    params = hp.get_parameters("Data/Hyperparameter/relish_hyperparameter_combinations_1.tsv")
+    params = hp.get_parameters("Data/Hyperparameter/relish_hyperparameter_combinations.tsv")
     print (params, flush=True)
     print ("Retrieved Hyperparameter", flush=True)
 
