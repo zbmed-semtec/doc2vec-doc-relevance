@@ -1,3 +1,5 @@
+# Show nDCG average for all the hyper-parameter settings
+
 import pandas as pd
 from os import listdir
 from os.path import isfile, join
