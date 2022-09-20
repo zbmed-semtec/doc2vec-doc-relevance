@@ -27,26 +27,23 @@ for index, row in hp_df.iterrows():
     print ("Doc2Vec Model Generated", flush=True)
 
     # Update Relevance Matrix
+    updated_matrix_file = "Data/Hyperparameter/Cosine_Similarities/relish_cosine_" + str(index) + ".tsv"
     um.update_relevance_matrix("Data/RELISH/Relevance_Matrix/RELISH.tsv", 
                             model, 
-                            "Data/RELISH/Relevance_Matrix/relish_relevance_matrix_updated.tsv", 
+                            updated_matrix_file, 
                             "RELISH")
     print ("Relevance Matrix Updated", flush=True)
 
     # Load Relevance Matrix
-    data = ct.load_relevance_matrix("Data/RELISH/Relevance_Matrix/relish_relevance_matrix_updated.tsv")
+    data = ct.load_relevance_matrix(updated_matrix_file)
     print ("Updated Relevance Matrix Loaded", flush=True)
 
     # Generate the counting table for the hyperparameter optimization process
-    counting_table = ct.hp_create_counting_table(data, "RELISH", False)
+    counting_table = ct.hp_create_counting_table(data, "RELISH", False) # True for TREC-repurposed, False otherwise
     print ("Counting table generated", flush=True)
 
-    # Save the counting table
-    ct.save_table(counting_table, "Data/RELISH/Relevance_Matrix/relish_counting_table.tsv")
-    print ("Counting table saved", flush=True)
-
     # Generate TPR and FPR values from the counting table required to plot the ROC curve
-    counting_table = rc.generate_roc_values(counting_table, "RELISH", False)
+    counting_table = rc.generate_roc_values(counting_table, "RELISH", False) # True for TREC-repurposed, False otherwise
     print ("TPR and FPR values calculated", flush=True)
 
     # Calculate area under the ROC curve
@@ -55,7 +52,7 @@ for index, row in hp_df.iterrows():
     print ("AUC value calculated", flush=True)
 
     # Update AUC value in the hyper-parameter tsv file
-    hp.update_file("Data/Hyperparameter/relish_hyperparameter_combinations_1.tsv", round(AUC_value, 4))
+    hp.update_file("Data/Hyperparameter/relish_hyperparameter_combinations.tsv", round(AUC_value, 4))
     print ("AUC value updated in the tsv file", flush=True)
 
 print ("Completed")
