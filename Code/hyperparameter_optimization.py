@@ -114,5 +114,5 @@ params_d2v = {
     "vector_size": [200, 300, 400], 
     "window": [5, 6, 7], 
     "min_count": [5], 
-    "epochs": [10], 
+    "epochs": [15], 
     "workers": [8]}
