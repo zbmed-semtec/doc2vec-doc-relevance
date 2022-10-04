@@ -34,5 +34,7 @@ for index, file in enumerate(all_files):
     # For the final loop, create a dataframe using 'combined_list' and write to tsv file
     if index == (len(all_files) - 1):
         combined_df = pd.DataFrame(combined_list, columns=df.columns.values.tolist())
+        
+        combined_df = combined_df.drop('PMIDs', axis=1)
 
-        combined_df.to_csv(output_path, sep='\t')
+        combined_df.to_csv(output_path, sep='\t', index=False)
