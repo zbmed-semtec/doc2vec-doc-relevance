@@ -18,7 +18,7 @@ This repository focuses on an approach exploring and assessing literature-based 
         - [Precision@N](#precisionn)
         - [nDCG@N](#ndcgn)
 7. [Code Implementation](#code-implementation)
-8. [Code Execution](#code-execution)
+8. [Getting Started](#getting-started)
 9. [Tutorial](#tutorial)
 
 
