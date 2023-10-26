@@ -93,7 +93,7 @@ First, clone the repository to your local machine using the following command:
 ###### Using SSH:
 Ensure you have set up SSH keys in your GitHub account.
 
-`git@github.com:zbmed-semtec/doc2vec-doc-relevance.git`
+`git clone git@github.com:zbmed-semtec/doc2vec-doc-relevance.git`
 
 
 ### Step 2: Generate Embeddings
