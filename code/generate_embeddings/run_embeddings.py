@@ -5,13 +5,13 @@ import logging
 import embeddings as em
 import embeddings_dataframe as ed
 
-log_file = "doc2vec1.log"
+log_file = "doc2vec.log"
 logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s')
 
 def run(params_dict: dict, input_file: str):
     """
     Wrapper function to create Tagged Documents, generate & train Doc2Vec models, generate embeddings and
-    stores embeddings in pickle file.
+    store embeddings in a pickle file.
     Parameters
     ----------
     params_dict : dict
@@ -29,45 +29,44 @@ def run(params_dict: dict, input_file: str):
 
     for idx, params in enumerate(param_combinations):
         logging.info(f"Combination {idx + 1}/{len(all_combinations)}")
-        if idx == 0:
-            # Create and train Doc2Vec model
-            model = em.createDoc2VecModel(pmids, docs, params)
-            logging.info("RELISH Doc2Vec Model Generated")
+        # Create and train Doc2Vec model
+        model = em.createDoc2VecModel(pmids, docs, params)
+        logging.info(f"RELISH Doc2Vec Model {idx} Generated")
 
-            # Define a directory for storing models
-            models_directory = f"models/"
+        # Define a directory for storing models
+        models_directory = f"models/"
 
-            # Ensure the directory exists or create it
-            if not os.path.exists(models_directory):
-                os.makedirs(models_directory)
+        # Ensure the directory exists or create it
+        if not os.path.exists(models_directory):
+            os.makedirs(models_directory)
 
-            # Save the model generated
-            em.saveDoc2VecModel(model, f"models/relish_doc2vec_{idx}.model")
-            logging.info("RELISH Doc2Vec Model Saved")
+        # Save the model generated
+        em.saveDoc2VecModel(model, f"models/relish_doc2vec_{idx}.model")
+        logging.info(f"RELISH Doc2Vec Model {idx} Saved")
 
-            # Define a directory for storing embeddings
-            embeddings_directory = f"embeddings/embeddings_doc2vec_{idx}/"
+        # Define a directory for storing embeddings
+        embeddings_directory = f"embeddings/embeddings_doc2vec_{idx}/"
 
-            # Ensure the directory exists or create it
-            if not os.path.exists(embeddings_directory):
-                os.makedirs(embeddings_directory)
+        # Ensure the directory exists or create it
+        if not os.path.exists(embeddings_directory):
+            os.makedirs(embeddings_directory)
             
-            # Generate the embeddings
-            em.create_document_embeddings(pmids, model, embeddings_directory)
-            logging.info("RELISH Embeddings Generated")
+        # Generate the embeddings
+        em.create_document_embeddings(pmids, model, embeddings_directory)
+        logging.info("RELISH Embeddings Generated")
 
-            # Define a directory for storing embeddings pickle file
-            embeddings_dataframe_directory = f"dataframe/"
+        # Define a directory for storing embeddings pickle file
+        embeddings_dataframe_directory = f"dataframe/"
 
-            # Ensure the directory exists or create it
-            if not os.path.exists(embeddings_dataframe_directory):
-                os.makedirs(embeddings_dataframe_directory)
+        # Ensure the directory exists or create it
+        if not os.path.exists(embeddings_dataframe_directory):
+            os.makedirs(embeddings_dataframe_directory)
 
-            # Generate embeddings dataframe pickle file
-            pmids = ed.sort_pmids(pmids)
-            embeddings_list = ed.get_embeddings(embeddings_directory, pmids)
-            ed.save_dataframe(pmids, embeddings_list, f"dataframe/embeddings_pickle_{idx}.pkl")
-            logging.info(f'Generated {idx} pickle dataframe')
+        # Generate embeddings dataframe pickle file
+        pmids = ed.sort_pmids(pmids)
+        embeddings_list = ed.get_embeddings(embeddings_directory, pmids)
+        ed.save_dataframe(pmids, embeddings_list, f"dataframe/embeddings_pickle_{idx}.pkl")
+        logging.info(f'Generated {idx} pickle dataframe')
 
 
 if __name__ == "__main__":
@@ -81,7 +80,7 @@ if __name__ == "__main__":
     "vector_size": [200, 300, 400],
     "window": [5, 6, 7],
     "min_count": [5],
-    "epochs": [1],
+    "epochs": [15],
     "workers": [8]
     }
 

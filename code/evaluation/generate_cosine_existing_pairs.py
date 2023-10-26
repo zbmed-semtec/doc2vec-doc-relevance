@@ -48,7 +48,7 @@ def get_cosine_similarity(input_relevance_matrix: str, embeddings: str, output_m
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input", type=str, help="File path for the TREC-repurposed/RELISH relevance matrix")
+    parser.add_argument("-i", "--input", type=str, help="File path for the RELISH relevance matrix")
     parser.add_argument("-e", "--embeddings", type=str, help="File path for the embeddings in pickle format")
     parser.add_argument("-o", "--output", type=str, help="Output file path for generated 4 column cosine similarity matrix")
     parser.add_argument("-c", "--corpus", type=str, help="Name of the corpus (TREC or RELISH)")

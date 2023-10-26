@@ -60,7 +60,8 @@ def calculate_precision(sorted_collection: pd.DataFrame, n: int) -> float:
         Value of Precision@n.
     """
     top_n = sorted_collection[:n]
-    true_positives_n = len(top_n[top_n["Relevance"] == 2])
+    # true_positives_n = len(top_n[top_n["Relevance"] == 2])  # three classes
+    true_positives_n = len(top_n[(top_n["Relevance"] == 2) | (top_n["Relevance"] == 1)]) # two classes
     precision_n = round(true_positives_n/n, 4)
     return precision_n
 
@@ -112,9 +113,9 @@ def write_to_tsv(ref_pmids: list, precision_matrix: np.array, output_filepath: s
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("c", "--cosine_file_path", help="File path to the 4-column cosine similarity existing pair matrix"
+    parser.add_argument("-c", "--cosine_file_path", help="File path to the 4-column cosine similarity existing pair matrix"
                         , required=True)
-    parser.add_argument("o", "--output_path", help="File path to save the precision matrix",
+    parser.add_argument("-o", "--output_path", help="File path to save the precision matrix",
                         required=True)
 
     args = parser.parse_args()
