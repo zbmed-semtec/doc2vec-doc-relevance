@@ -83,7 +83,7 @@ The [`run_embeddings.py`](./code/generate_embeddings/run_embeddings.py) serves a
 
 To get started with this project, follow these steps:
 
-#### Step 1: Clone the Repository
+### Step 1: Clone the Repository
 First, clone the repository to your local machine using the following command:
 
 ###### Using HTTP:
@@ -96,7 +96,7 @@ Ensure you have set up SSH keys in your GitHub account.
 `git@github.com:zbmed-semtec/doc2vec-doc-relevance.git`
 
 
-#### Step 2: Generate Embeddings
+### Step 2: Generate Embeddings
 The [`run_embeddings.py`](/code/generate_embeddings/run_embeddings.py) script uses the RELISH Tokenized npy file as input and includes a default parameter dictionary with preset hyperparameters. You can easily adapt it for different values and parameters by modifying the `params_dict`. Make sure to have the RELISH Tokenized.npy file within the directory under the data folder.
 
 To run this script, please execute the following command:
@@ -105,7 +105,7 @@ To run this script, please execute the following command:
 
 The script will create Doc2Vec models, generate embeddings, and store them in separate directories. You should expect to find a total of 18 files corresponding to the various models, embeddings, and embedding pickle files.
 
-#### Step 3: Calculate Cosine Similarity
+### Step 3: Calculate Cosine Similarity
 In order to generate the cosine similarity matrix and execute this [script](/code/evaluation/generate_cosine_existing_pairs.py), run the following command:
 
 ` python3 code/evaluation/generate_cosine_existing_pairs.py [-i INPUT] [-e EMBEDDINGS] [-o OUTPUT] [-c CORPUS]`
@@ -123,11 +123,11 @@ For example, if you are running the code from the code folder and have the RELIS
 `python3 code/evaluation/generate_cosine_existing_pairs.py -i data/RELISH/Relevance_Matrix/RELISH.tsv -e dataframe/embeddings_pickle_0.tsv -o data/cosine_similarity_0.tsv -c RELISH`
 
 
-#### Step 4: Hyperparameter Optimization
+### Step 4: Hyperparameter Optimization
 
 **_To be written_**
 
-#### Step 5: Precision@N
+### Step 5: Precision@N
 In order to calculate the Precision@N scores and execute this [script](/code/evaluation/precision.py), run the follwing command:
 
 ` python3 code/evaluation/precision.py [-c COSINE FILE PATH]  [-o OUTPUT PATH]`
@@ -142,7 +142,7 @@ For example, if you are running the code from the code folder and have the cosin
 `python3 code/evalutaion/precision.py -c data/cosine_similarity_0.tsv -o data/precision_doc2vec_0.tsv`
 
 
-#### Step 6: nDCG@N
+### Step 6: nDCG@N
 In order to calculate nDCG scores and execute this [script](/code/evaluation/calculate_gain.py), run the following command:
 
 `python3 code/evaluation/calculate_gain.py [-i INPUT]  [-o OUTPUT]`
