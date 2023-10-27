@@ -88,12 +88,16 @@ First, clone the repository to your local machine using the following command:
 
 ###### Using HTTP:
 
-`git clone https://github.com/zbmed-semtec/doc2vec-doc-relevance.git`
+```
+git clone https://github.com/zbmed-semtec/doc2vec-doc-relevance.git
+```
 
 ###### Using SSH:
 Ensure you have set up SSH keys in your GitHub account.
 
-`git clone git@github.com:zbmed-semtec/doc2vec-doc-relevance.git`
+```
+git clone git@github.com:zbmed-semtec/doc2vec-doc-relevance.git
+```
 
 
 ### Step 2: Generate Embeddings
@@ -101,14 +105,18 @@ The [`run_embeddings.py`](/code/generate_embeddings/run_embeddings.py) script us
 
 To run this script, please execute the following command:
 
-`python3 code/generate_embeddings/run_embeddings.py --input "data/RELISH_tokenized.npy"`
+```
+python3 code/generate_embeddings/run_embeddings.py --input "data/RELISH_tokenized.npy"
+```
 
 The script will create Doc2Vec models, generate embeddings, and store them in separate directories. You should expect to find a total of 18 files corresponding to the various models, embeddings, and embedding pickle files.
 
 ### Step 3: Calculate Cosine Similarity
 In order to generate the cosine similarity matrix and execute this [script](/code/evaluation/generate_cosine_existing_pairs.py), run the following command:
 
-` python3 code/evaluation/generate_cosine_existing_pairs.py [-i INPUT] [-e EMBEDDINGS] [-o OUTPUT] [-c CORPUS]`
+```
+python3 code/evaluation/generate_cosine_existing_pairs.py [-i INPUT] [-e EMBEDDINGS] [-o OUTPUT] [-c CORPUS]
+```
 
 You must pass the following four arguments:
 
@@ -120,7 +128,9 @@ You must pass the following four arguments:
 
 For example, if you are running the code from the code folder and have the RELISH relevance matrix in the data folder, run the cosine matrix creation for the first hyperparameter as:
 
-`python3 code/evaluation/generate_cosine_existing_pairs.py -i data/RELISH/Relevance_Matrix/RELISH.tsv -e dataframe/embeddings_pickle_0.tsv -o data/cosine_similarity_0.tsv -c RELISH`
+```
+python3 code/evaluation/generate_cosine_existing_pairs.py -i data/RELISH/Relevance_Matrix/RELISH.tsv -e dataframe/embeddings_pickle_0.tsv -o data/cosine_similarity_0.tsv -c RELISH
+```
 
 
 ### Step 4: Hyperparameter Optimization
@@ -130,7 +140,9 @@ For example, if you are running the code from the code folder and have the RELIS
 ### Step 5: Precision@N
 In order to calculate the Precision@N scores and execute this [script](/code/evaluation/precision.py), run the follwing command:
 
-` python3 code/evaluation/precision.py [-c COSINE FILE PATH]  [-o OUTPUT PATH]`
+```
+python3 code/evaluation/precision.py [-c COSINE FILE PATH]  [-o OUTPUT PATH]
+```
 
 You must pass the following two arguments:
 
@@ -139,13 +151,17 @@ You must pass the following two arguments:
 
 For example, if you are running the code from the code folder and have the cosine similarity TSV file in the data folder, run the precision matrix creation for the first hyperparameter as:
 
-`python3 code/evalutaion/precision.py -c data/cosine_similarity_0.tsv -o data/precision_doc2vec_0.tsv`
+```
+python3 code/evalutaion/precision.py -c data/cosine_similarity_0.tsv -o data/precision_doc2vec_0.tsv
+```
 
 
 ### Step 6: nDCG@N
 In order to calculate nDCG scores and execute this [script](/code/evaluation/calculate_gain.py), run the following command:
 
-`python3 code/evaluation/calculate_gain.py [-i INPUT]  [-o OUTPUT]`
+```
+python3 code/evaluation/calculate_gain.py [-i INPUT]  [-o OUTPUT]
+```
 
 You must pass the following two arguments:
 
@@ -154,7 +170,9 @@ You must pass the following two arguments:
 
 For example, if you are running the code from the code folder and have the 4 column RELISH TSV file in the data folder, run the matrix creation for the first hyperparameter as:
 
-`python3 code/evaluation/calculate_gain.py -i data/cosine_similarity_0.tsv -o data/ndcg_doc2vec_0.tsv`
+```
+python3 code/evaluation/calculate_gain.py -i data/cosine_similarity_0.tsv -o data/ndcg_doc2vec_0.tsv
+```
 
 
 ## Tutorial

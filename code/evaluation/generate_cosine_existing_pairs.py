@@ -1,5 +1,6 @@
 import argparse
 import pandas as pd
+from tqdm import tqdm
 from scipy import spatial
 
 
@@ -28,21 +29,28 @@ def get_cosine_similarity(input_relevance_matrix: str, embeddings: str, output_m
     print('Read embeddings pickle file')
     relevance_matrix_df["Cosine Similarity"] = ""
 
-    for index, row in relevance_matrix_df.iterrows():
-        ref_pmid = row["PMID1"]
-        assessed_pmid = row["PMID2"]
-        try:
-            # Determine the cosine similarity of the ref and assessed pmids and add to the 4th column
-            ref_pmid_vector = embeddings_df.loc[embeddings_df.pmids == ref_pmid, "embeddings"].iloc[0]
-            assessed_pmid_vector = embeddings_df.loc[embeddings_df.pmids == assessed_pmid, "embeddings"].iloc[0]
-            row["Cosine Similarity"] = round(1 - spatial.distance.cosine(ref_pmid_vector, assessed_pmid_vector), 4)
-        except:
-            # Leave the 4th column empty if the ref or assessed pmid not found in the dataset
-            row["Cosine Similarity"] = ""
+    # Create a dictionary to store embeddings
+    embeddings_dict = {pmid: embedding for pmid, embedding in zip(embeddings_df['pmids'], embeddings_df['embeddings'])}
 
-        # Make changes in the original dataframe
-        relevance_matrix_df.at[index, 'Cosine Similarity'] = row['Cosine Similarity']
+    # Create a list of ref and assessed PMID pairs
+    pmid_pairs = list(zip(relevance_matrix_df["PMID1"].astype(str), relevance_matrix_df["PMID2"].astype(str)))
+
+    cosine_similarities = []
+    
+    for ref_pmid, assessed_pmid in tqdm(pmid_pairs, total=len(pmid_pairs), desc="Calculating Cosine Similarities"):
+        try:
+            ref_pmid_vector = embeddings_dict[str(ref_pmid)]
+            assessed_pmid_vector = embeddings_dict[str(assessed_pmid)]
+            if ref_pmid_vector and assessed_pmid_vector:
+                cosine_similarity = round(1 - spatial.distance.cosine(ref_pmid_vector, assessed_pmid_vector), 4)
+        except:
+            cosine_similarity = ""
+        cosine_similarities.append(cosine_similarity)
+
+    # Make changes in the original dataframe
+    relevance_matrix_df['Cosine Similarity'] = cosine_similarities
     print('Added cosine scores')
+    # Saves the cosine matrix 
     relevance_matrix_df.to_csv(output_matrix_name, index=False, sep="\t")
     print('Saved matrix')
 
@@ -51,6 +59,6 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--input", type=str, help="File path for the RELISH relevance matrix")
     parser.add_argument("-e", "--embeddings", type=str, help="File path for the embeddings in pickle format")
     parser.add_argument("-o", "--output", type=str, help="Output file path for generated 4 column cosine similarity matrix")
-    parser.add_argument("-c", "--corpus", type=str, help="Name of the corpus (TREC or RELISH)")
+    parser.add_argument("-c", "--corpus", type=str, help="Name of the corpus (RELISH)")
     args = parser.parse_args()
     get_cosine_similarity(args.input, args.embeddings, args.output, args.corpus)
