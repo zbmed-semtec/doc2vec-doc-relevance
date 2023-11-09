@@ -138,7 +138,7 @@ python3 code/evaluation/generate_cosine_existing_pairs.py -i data/RELISH/Relevan
 **_To be written_**
 
 ### Step 5: Precision@N
-In order to calculate the Precision@N scores and execute this [script](/code/evaluation/precision.py), run the follwing command:
+In order to calculate the Precision@N scores and execute this [script](/code/evaluation/precision.py), run the following command:
 
 ```
 python3 code/evaluation/precision.py [-c COSINE FILE PATH]  [-o OUTPUT PATH]
