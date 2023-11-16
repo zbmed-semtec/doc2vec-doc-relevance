@@ -138,7 +138,7 @@ python3 code/evaluation/generate_cosine_existing_pairs.py -i data/RELISH/Relevan
 **_To be written_**
 
 ### Step 5: Precision@N
-In order to calculate the Precision@N scores and execute this [script](/code/evaluation/precision.py), run the follwing command:
+In order to calculate the Precision@N scores and execute this [script](/code/evaluation/precision.py), run the following command:
 
 ```
 python3 code/evaluation/precision.py [-c COSINE FILE PATH]  [-o OUTPUT PATH]
@@ -152,7 +152,7 @@ You must pass the following two arguments:
 For example, if you are running the code from the code folder and have the cosine similarity TSV file in the data folder, run the precision matrix creation for the first hyperparameter as:
 
 ```
-python3 code/evalutaion/precision.py -c data/cosine_similarity_0.tsv -o data/precision_doc2vec_0.tsv
+python3 code/evaluation/precision.py -c data/cosine_similarity_0.tsv -o data/precision_doc2vec_0.tsv
 ```
 
 
