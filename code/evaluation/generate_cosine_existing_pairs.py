@@ -1,7 +1,6 @@
 import argparse
 import pandas as pd
 from tqdm import tqdm
-import numpy as np
 from scipy import spatial
 
 
