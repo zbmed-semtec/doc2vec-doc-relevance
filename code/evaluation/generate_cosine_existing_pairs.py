@@ -1,6 +1,7 @@
 import argparse
 import pandas as pd
 from tqdm import tqdm
+import numpy as np
 from scipy import spatial
 
 
@@ -33,15 +34,14 @@ def get_cosine_similarity(input_relevance_matrix: str, embeddings: str, output_m
     embeddings_dict = {pmid: embedding for pmid, embedding in zip(embeddings_df['pmids'], embeddings_df['embeddings'])}
 
     # Create a list of ref and assessed PMID pairs
-    pmid_pairs = list(zip(relevance_matrix_df["PMID1"].astype(str), relevance_matrix_df["PMID2"].astype(str)))
-
+    pmid_pairs = list(zip(relevance_matrix_df["PMID1"], relevance_matrix_df["PMID2"]))
     cosine_similarities = []
     
     for ref_pmid, assessed_pmid in tqdm(pmid_pairs, total=len(pmid_pairs), desc="Calculating Cosine Similarities"):
         try:
-            ref_pmid_vector = embeddings_dict[str(ref_pmid)]
-            assessed_pmid_vector = embeddings_dict[str(assessed_pmid)]
-            if ref_pmid_vector and assessed_pmid_vector:
+            ref_pmid_vector = embeddings_dict[ref_pmid]
+            assessed_pmid_vector = embeddings_dict[assessed_pmid]
+            if ref_pmid_vector is not None and assessed_pmid_vector is not None:
                 cosine_similarity = round(1 - spatial.distance.cosine(ref_pmid_vector, assessed_pmid_vector), 4)
         except:
             cosine_similarity = ""
