@@ -129,7 +129,7 @@ You must pass the following four arguments:
 For example, if you are running the code from the code folder and have the RELISH relevance matrix in the data folder, run the cosine matrix creation for the first hyperparameter as:
 
 ```
-python3 code/evaluation/generate_cosine_existing_pairs.py -i data/RELISH/Relevance_Matrix/RELISH.tsv -e dataframe/embeddings_pickle_0.tsv -o data/cosine_similarity_0.tsv -c RELISH
+python3 code/evaluation/generate_cosine_existing_pairs.py -i data/RELISH/Relevance_Matrix/RELISH.tsv -e dataframe/embeddings_pickle_0.pkl -o data/cosine_similarity_0.tsv -c RELISH
 ```
 
 
