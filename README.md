@@ -126,7 +126,7 @@ To deactivate the virtual environment after running the project, run the followi
 deactivate
 ```
 
-### Step 2: Generate Embeddings
+### Step 3: Generate Embeddings
 The [`run_embeddings.py`](/code/generate_embeddings/run_embeddings.py) script uses the RELISH Tokenized npy file as input and includes a default parameter dictionary with preset hyperparameters. You can easily adapt it for different values and parameters by modifying the `params_dict`. Make sure to have the RELISH Tokenized.npy file within the directory under the data folder.
 
 To run this script, please execute the following command:
@@ -137,7 +137,7 @@ python3 code/generate_embeddings/run_embeddings.py --input "data/RELISH_tokenize
 
 The script will create Doc2Vec models, generate embeddings, and store them in separate directories. You should expect to find a total of 18 files corresponding to the various models, embeddings, and embedding pickle files.
 
-### Step 3: Calculate Cosine Similarity
+### Step 4: Calculate Cosine Similarity
 In order to generate the cosine similarity matrix and execute this [script](/code/evaluation/generate_cosine_existing_pairs.py), run the following command:
 
 ```
@@ -159,11 +159,11 @@ python3 code/evaluation/generate_cosine_existing_pairs.py -i data/RELISH/Relevan
 ```
 
 
-### Step 4: Hyperparameter Optimization
+### Step 5: Hyperparameter Optimization
 
 **_To be written_**
 
-### Step 5: Precision@N
+### Step 6: Precision@N
 In order to calculate the Precision@N scores and execute this [script](/code/evaluation/precision.py), run the following command:
 
 ```
@@ -182,7 +182,7 @@ python3 code/evaluation/precision.py -c data/cosine_similarity_0.tsv -o data/pre
 ```
 
 
-### Step 6: nDCG@N
+### Step 7: nDCG@N
 In order to calculate nDCG scores and execute this [script](/code/evaluation/calculate_gain.py), run the following command:
 
 ```
