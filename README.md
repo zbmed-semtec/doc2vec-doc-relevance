@@ -99,6 +99,32 @@ Ensure you have set up SSH keys in your GitHub account.
 git clone git@github.com:zbmed-semtec/doc2vec-doc-relevance.git
 ```
 
+### Step 2: Create a virtual environment and install dependencies
+
+To create a virtual environment within your repository, run the following command:
+
+```
+python3 -m venv .venv 
+source .venv/bin/activate   # On Windows, use '.venv\Scripts\activate' 
+```
+
+To confirm if the virtual environment is activated and check the location of yourPython interpreter, run the following command:
+
+```
+which python    # On Windows command prompt, use 'where python'
+                # On Windows PowerShell, use 'Get-Command python'
+```
+The code is stable with python 3.6 and higher. The required python packages are listed in the requirements.txt file. To install the required packages, run the following command:
+
+```
+pip install -r code/requirements.txt
+```
+
+To deactivate the virtual environment after running the project, run the following command:
+
+```
+deactivate
+```
 
 ### Step 2: Generate Embeddings
 The [`run_embeddings.py`](/code/generate_embeddings/run_embeddings.py) script uses the RELISH Tokenized npy file as input and includes a default parameter dictionary with preset hyperparameters. You can easily adapt it for different values and parameters by modifying the `params_dict`. Make sure to have the RELISH Tokenized.npy file within the directory under the data folder.
