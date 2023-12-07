@@ -200,6 +200,23 @@ For example, if you are running the code from the code folder and have the 4 col
 python3 code/evaluation/calculate_gain.py -i data/cosine_similarity_0.tsv -o data/ndcg_doc2vec_0.tsv
 ```
 
+### Step 8: Compile Results
+
+In order to compile the average result values for Precison@ and nDCG@N and generate a single TSV file each, please use this [script](code/evaluation/show_avg.py).
+
+You must pass the following two arguments:
+
++ -i / --input: Path to the directory consisting of all the precision matrices/gain matrices.
++ -o/ --output: Output path along with the name of the file to save the generated compiled Precision@N / nDCG@N TSV file.
+
+
+If you are running the code from the code folder, run the compilation script as:
+
+```
+python3 code/evaluation/show_avg.py -i data/output/gain_matrices/ -o data/output/results_gain.tsv
+```
+
+NOTE: Please do not forget to put a `'/'` at the end of the input file path.
 
 ## Tutorial
 A [tutorial](./docs/embeddings/) is accessible in the form of Jupyter notebook for the generation of embeddings.
