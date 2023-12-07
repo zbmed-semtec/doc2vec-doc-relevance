@@ -5,7 +5,9 @@ from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from typing import Union, List
 
 # Retrieves cleaned data from RELISH and TREC npy files
-def process_data_from_npy(file_path_in: str = None) -> Union[List[str], List[List[str]], List[List[str]], List[List[str]]] :
+
+
+def process_data_from_npy(file_path_in: str = None) -> Union[List[str], List[List[str]], List[List[str]], List[List[str]]]:
     """
     Retrieves cleaned data from RELISH and TREC npy files, separating each column 
     into their own respective list.
@@ -36,14 +38,23 @@ def process_data_from_npy(file_path_in: str = None) -> Union[List[str], List[Lis
     docs = []
 
     for line in doc:
-        pmids.append(np.ndarray.tolist(line[0]))
-        titles.append(np.ndarray.tolist(line[1]))
-        abstracts.append(np.ndarray.tolist(line[2]))
-        docs.append(np.ndarray.tolist(line[1]) + np.ndarray.tolist(line[2]))
+        if isinstance(line[0], (np.ndarray, np.generic)):
+            pmids.append(np.ndarray.tolist(line[0]))
+            titles.append(np.ndarray.tolist(line[1]))
+            abstracts.append(np.ndarray.tolist(line[2]))
+            docs.append(np.ndarray.tolist(
+                line[1]) + np.ndarray.tolist(line[2]))
+        else:
+            pmids.append(line[0])
+            titles.append(line[1])
+            abstracts.append(line[2])
+            docs.append(line[1] + line[2])
 
     return (pmids, titles, abstracts, docs)
 
-# Create and train the Doc2Vec Model    
+# Create and train the Doc2Vec Model
+
+
 def createDoc2VecModel(pmids: List[str], docs: List[List[str]], params: dict) -> Doc2Vec:
     """
     Create and train the Doc2Vec model using Gensim for the documents 
@@ -63,16 +74,20 @@ def createDoc2VecModel(pmids: List[str], docs: List[List[str]], params: dict) ->
     model: Doc2Vec
             Doc2Vec model.
     """
-    tagged_data = [TaggedDocument(words=_d, tags=[str(pmids[i])]) for i, _d in enumerate(docs)]
+    tagged_data = [TaggedDocument(words=_d, tags=[str(pmids[i])])
+                   for i, _d in enumerate(docs)]
 
     # model = Doc2Vec(vector_size=200, window=5, min_count=1, epochs=5)
     model = Doc2Vec(**params)
     model.build_vocab(tagged_data)
-    model.train(tagged_data, total_examples=model.corpus_count, epochs=model.epochs)
+    model.train(tagged_data, total_examples=model.corpus_count,
+                epochs=model.epochs)
 
     return model
 
 # Save the Doc2Vec Model
+
+
 def saveDoc2VecModel(model: Doc2Vec, output_file: str) -> None:
     """
     Saves the Doc2Vec model.
@@ -87,6 +102,8 @@ def saveDoc2VecModel(model: Doc2Vec, output_file: str) -> None:
     model.save(output_file)
 
 # Generate and save the document embeddings
+
+
 def create_document_embeddings(pmids: List[str], model: Doc2Vec, output_directory: str) -> None:
     """
     Create and save the document embeddings for the documents 
@@ -104,5 +121,3 @@ def create_document_embeddings(pmids: List[str], model: Doc2Vec, output_director
     """
     for pmid in pmids:
         np.save(f'{output_directory}/{pmid}', model.docvecs[str(pmid)])
-
-
