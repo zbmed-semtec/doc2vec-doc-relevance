@@ -105,7 +105,11 @@ To create a virtual environment within your repository, run the following comman
 
 ```
 python3 -m venv .venv 
-source .venv/bin/activate   # On Windows, use '.venv\Scripts\activate' 
+source .venv/bin/activate   # On Windows, use '.venv\Scripts\activate'
+
+#If you have any difficulties to activate the env on Windows, try below commands:
+'.venv\Scripts\activate.ps1'  # PowerShell
+'.venv\Scripts\activate.bat'  # Command prompt
 ```
 
 To confirm if the virtual environment is activated and check the location of yourPython interpreter, run the following command:
