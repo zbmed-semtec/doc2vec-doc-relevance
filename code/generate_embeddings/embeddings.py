@@ -38,15 +38,13 @@ def process_data_from_npy(file_path_in: str = None) -> Union[List[str], List[Lis
     docs = []
 
     for line in doc:
-        # if isinstance(line[0], (np.ndarray, np.generic)):
-
-        #     pmids.append(np.ndarray.tolist(line[0]))
-        #     titles.append(np.ndarray.tolist(line[1]))
-        #     abstracts.append(np.ndarray.tolist(line[2]))
-        #     docs.append(np.ndarray.tolist(
-        #         line[1]) + np.ndarray.tolist(line[2]))
         if isinstance(line[0], (np.ndarray, np.generic)):
-            # else:
+            pmids.append(np.ndarray.tolist(line[0]))
+            titles.append(np.ndarray.tolist(line[1]))
+            abstracts.append(np.ndarray.tolist(line[2]))
+            docs.append(np.ndarray.tolist(
+                line[1]) + np.ndarray.tolist(line[2]))
+        else:
             pmids.append(line[0])
             titles.append(line[1])
             abstracts.append(line[2])
