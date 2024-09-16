@@ -1,3 +1,9 @@
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+
+
+[![SWH](https://archive.softwareheritage.org/badge/swh:1:dir:5939540bdda33571b0969e520360b80d98b2bf2b/)](https://archive.softwareheritage.org/swh:1:dir:5939540bdda33571b0969e520360b80d98b2bf2b;origin=https://github.com/zbmed-semtec/doc2vec-doc-relevance;visit=swh:1:snp:876472bcf3941f5ccde23d20465f2ece7ae1d80f;anchor=swh:1:rev:20b6036fd63891bef25d6af364c6b17066a86416)
+
+
 # Doc2Vec-Doc-relevance
 This repository focuses on an approach exploring and assessing literature-based doc-2-doc recommendations using the Doc2Vec technique with its application to the RELISH dataset. 
 
@@ -130,22 +136,54 @@ To deactivate the virtual environment after running the project, run the followi
 deactivate
 ```
 
-### Step 3: Generate Embeddings
-The [`run_embeddings.py`](/code/generate_embeddings/run_embeddings.py) script uses the RELISH Tokenized npy file as input and includes a default parameter dictionary with preset hyperparameters. You can easily adapt it for different values and parameters by modifying the `params_dict`. Make sure to have the RELISH Tokenized.npy file within the directory under the data folder.
+### Step 3: Dataset
+
+Use the Download_Dataset.sh script to download the Split Dataset by running the following commands:
+
+
+```
+chmod +777 Download_Dataset.sh
+./Download_Dataset.sh
+```
+
+This script makes sure that the necessary folders are created and the files are downloaded in the corresponding folders as shown below.
+
+```
+📦 /doc2vec-doc-relevance
+└─ data
+   └─ Input
+      ├─ Tokens
+      │  ├─ relish.npy
+      └─ Ground_truth
+         └─ relevance_matrix.tsv
+```
+
+### Step 4: Generate Embeddings
+The [`embeddings.py`](/code/embeddings.py) script uses the RELISH Tokenized npy file as input. You can easily adapt it for different values and parameters by modifying the [`hyperparameters.yaml`](./code/hyperparameters.yaml) Make sure to have the RELISH Tokenized.npy file within the directory under the data folder.
+
+```
+python3 code/embeddings.py [-i INPUT PATH] [-o OUTPUT PATH] [-p PARAMS]
+```
+
+You must pass the following arguments:
+
++ -i/ --input : File path to the RELISH tokenized .npy file.
++ -o/ --output : File path to the resulting embeddings in pickle file format.
++ -p/ --params : File path to the hyperparameters YAML file.
 
 To run this script, please execute the following command:
 
 ```
-python3 code/generate_embeddings/run_embeddings.py --input "data/RELISH_tokenized.npy"
+python3 code/embeddings.py --input data/Input/Tokens/relish.npy --output data/embeddings --params code/hyperparameters.yaml 
 ```
 
 The script will create Doc2Vec models, generate embeddings, and store them in separate directories. You should expect to find a total of 18 files corresponding to the various models, embeddings, and embedding pickle files.
 
-### Step 4: Calculate Cosine Similarity
-In order to generate the cosine similarity matrix and execute this [script](/code/evaluation/generate_cosine_existing_pairs.py), run the following command:
+### Step 5: Calculate Cosine Similarity
+In order to generate the cosine similarity matrix and execute this [script](/code/generate_cosine_existing_pairs.py), run the following command:
 
 ```
-python3 code/evaluation/generate_cosine_existing_pairs.py [-i INPUT] [-e EMBEDDINGS] [-o OUTPUT] [-c CORPUS]
+python3 code/generate_cosine_existing_pairs.py [-i INPUT] [-e EMBEDDINGS] [-o OUTPUT] 
 ```
 
 You must pass the following four arguments:
@@ -153,44 +191,56 @@ You must pass the following four arguments:
 + -i/ --input : File path to the RELISH relevance matrix in the TSV format.
 + -e/ --embeddings : File path to the embeddings in the pickle file format.
 + -o/ --output : File path for the output 4 column cosine similarity matrix.
-+ -c / --corpus : Name of the corpus (RELISH).
-
 
 For example, if you are running the code from the code folder and have the RELISH relevance matrix in the data folder, run the cosine matrix creation for the first hyperparameter as:
 
 ```
-python3 code/evaluation/generate_cosine_existing_pairs.py -i data/RELISH/Relevance_Matrix/RELISH.tsv -e dataframe/embeddings_pickle_0.pkl -o data/cosine_similarity_0.tsv -c RELISH
+python3 code/generate_cosine_existing_pairs.py -i data/Input/Ground_truth/relevance_matrix.tsv -e data/embeddings/embeddings_0.pkl -o data/cosine/cosine_similarity_0.tsv
 ```
 
+Note: You would have to run the above command for every hyperparameter configuration by changing the file name for the embedding's pickle file or use the following shell script to generate all files at once.
 
-### Step 5: Hyperparameter Optimization
-
-**_To be written_**
+```
+for VALUE in {0..17};do
+python3 code/generate_cosine_existing_pairs.py -i data/Input/Ground_truth/relevance_matrix.tsv -e data/embeddings/embeddings_pickle_${VALUE}.pkl -o data/cosine/cosine_similarity_${VALUE}.tsv
+done
+```
 
 ### Step 6: Precision@N
-In order to calculate the Precision@N scores and execute this [script](/code/evaluation/precision.py), run the following command:
+In order to calculate the Precision@N scores and execute this [script](/code/precision.py), run the following command:
 
 ```
-python3 code/evaluation/precision.py [-c COSINE FILE PATH]  [-o OUTPUT PATH]
+python3 code/precision.py [-i COSINE FILE PATH]  [-o OUTPUT PATH]  [-c CLASSES]
 ```
 
 You must pass the following two arguments:
 
-+ -c/ --cosine_file_path: path to the 4-column cosine similarity existing pairs RELISH file: (tsv file)
++ -i/ --cosine_file_path: path to the 4-column cosine similarity existing pairs RELISH file: (tsv file)
 + -o/ --output_path: path to save the generated precision matrix: (tsv file)
++ -c/ --classes: Number of classes for class distribution (2 or 3)
 
 For example, if you are running the code from the code folder and have the cosine similarity TSV file in the data folder, run the precision matrix creation for the first hyperparameter as:
 
 ```
-python3 code/evaluation/precision.py -c data/cosine_similarity_0.tsv -o data/precision_doc2vec_0.tsv
+python3 code/precision.py -i data/cosine/cosine_similarity_0.tsv -o data/precision_three_classes/precision_0.tsv -c 3
 ```
 
+Note: You would have to run the above command for every hyperparameter configuration by changing the file name for the cosine similarity file or use the following shell script to generate all files at once.
+
+
+```
+for VALUE in {0..17};do
+python3 code/precision.py -c data/cosine_similarity_${VALUE}.tsv -o data/precision_three_classes/precision_${VALUE}.tsv -c 3
+done
+```
+
+Note: Make sure to re-run the above command by changing the classes for a different class distribution.
 
 ### Step 7: nDCG@N
-In order to calculate nDCG scores and execute this [script](/code/evaluation/calculate_gain.py), run the following command:
+In order to calculate nDCG scores and execute this [script](/code/calculate_gain.py), run the following command:
 
 ```
-python3 code/evaluation/calculate_gain.py [-i INPUT]  [-o OUTPUT]
+python3 code/calculate_gain.py [-i INPUT]  [-o OUTPUT]
 ```
 
 You must pass the following two arguments:
@@ -201,12 +251,20 @@ You must pass the following two arguments:
 For example, if you are running the code from the code folder and have the 4 column RELISH TSV file in the data folder, run the matrix creation for the first hyperparameter as:
 
 ```
-python3 code/evaluation/calculate_gain.py -i data/cosine_similarity_0.tsv -o data/ndcg_doc2vec_0.tsv
+python3 code/calculate_gain.py -i data/cosine/cosine_similarity_0.tsv -o data/gain/ndcg_0.tsv
+```
+
+Note: You would have to run the above command for every hyperparameter configuration by changing the file name for the cosine similarity file or use the following shell script to generate all files at once.
+
+```
+for VALUE in {0..17};do
+python3 code/calculate_gain.py -i data/cosine/cosine_similarity_${VALUE}.tsv -o data/gain/ndcg_${VALUE}.tsv
+done
 ```
 
 ### Step 8: Compile Results
 
-In order to compile the average result values for Precison@ and nDCG@N and generate a single TSV file each, please use this [script](code/evaluation/show_avg.py).
+In order to compile the average result values for Precison@ and nDCG@N and generate a single TSV file each, please use this [script](code/show_avg.py).
 
 You must pass the following two arguments:
 
@@ -217,11 +275,11 @@ You must pass the following two arguments:
 If you are running the code from the code folder, run the compilation script as:
 
 ```
-python3 code/evaluation/show_avg.py -i data/output/gain_matrices/ -o data/output/results_gain.tsv
+python3 code/show_avg.py -i data/gain/ -o data/results_gain.tsv
 ```
 
 NOTE: Please do not forget to put a `'/'` at the end of the input file path.
 
 ## Tutorial
-A [tutorial](./docs/embeddings/) is accessible in the form of Jupyter notebook for the generation of embeddings.
-
++ A [tutorial](./docs/embeddings/) is accessible in the form of Jupyter notebook for the generation of embeddings.
++ A [tutorial](./docs/cosine_similarity/) is accessible in the form of Jupyter notebook for the computing cosine similarity values.

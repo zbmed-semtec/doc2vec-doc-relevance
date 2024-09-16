@@ -21,6 +21,6 @@ authors:
 title: "doc2vec-doc-relevance"
 version: 1.0.0
 date-released: 2022-04-19
-license: GPL-3.0-or-later
+license: "https://spdx.org/licenses/GPL-3.0"
 copyright: ZB MED
 repository-code: "https://github.com/zbmed-semtec/doc2vec-doc-relevance"

@@ -1,10 +1,11 @@
+import os
 import argparse
 import pandas as pd
 from tqdm import tqdm
 from scipy import spatial
 
 
-def get_cosine_similarity(input_relevance_matrix: str, embeddings: str, output_matrix_name: str, corpus: str) -> None:
+def get_cosine_similarity(input_relevance_matrix: str, embeddings: str, output_matrix_name: str) -> None:
     """
     Creates a 4 column matrix by appending cosine similarity scores for all existing pairs
     of PMIDs to the Relevance matrix.
@@ -16,15 +17,9 @@ def get_cosine_similarity(input_relevance_matrix: str, embeddings: str, output_m
         File path for pickle file of pmids and embeddings.
     output_matrix_name : str
         File path for the generated 4 column matrix.
-    corpus : str
-        Name of the corpus (TREC or RELISH).
     """
     embeddings_df = pd.read_pickle(embeddings)
-    if corpus == "RELISH":
-        column_names = ["PMID1", "PMID2", "Relevance"]
-    elif corpus == "TREC":
-        column_names = ["PMID1", "PMID2", "Rel-d2d"]
-    relevance_matrix_df = pd.read_csv(input_relevance_matrix, names=column_names, sep="\t")
+    relevance_matrix_df = pd.read_csv(input_relevance_matrix, sep="\t")
     # Adds the empty 4th column to the file
     print('Read embeddings pickle file')
     relevance_matrix_df["Cosine Similarity"] = ""
@@ -50,6 +45,9 @@ def get_cosine_similarity(input_relevance_matrix: str, embeddings: str, output_m
     relevance_matrix_df['Cosine Similarity'] = cosine_similarities
     print('Added cosine scores')
     # Saves the cosine matrix 
+    output_directory = os.path.dirname(output_matrix_name)
+    if output_directory: 
+        os.makedirs(output_directory, exist_ok=True)
     relevance_matrix_df.to_csv(output_matrix_name, index=False, sep="\t")
     print('Saved matrix')
 
@@ -58,6 +56,5 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--input", type=str, help="File path for the RELISH relevance matrix")
     parser.add_argument("-e", "--embeddings", type=str, help="File path for the embeddings in pickle format")
     parser.add_argument("-o", "--output", type=str, help="Output file path for generated 4 column cosine similarity matrix")
-    parser.add_argument("-c", "--corpus", type=str, help="Name of the corpus (RELISH)")
     args = parser.parse_args()
-    get_cosine_similarity(args.input, args.embeddings, args.output, args.corpus)
+    get_cosine_similarity(args.input, args.embeddings, args.output)
