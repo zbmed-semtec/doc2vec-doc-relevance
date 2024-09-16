@@ -19,8 +19,7 @@ This repository focuses on an approach exploring and assessing literature-based 
           - [Parameters](#parameters)
     2. [Format embeddings](#format-embeddings)
     3. [Calculate Cosine Similarity](#calculate-cosine-similarity)
-    4. [Hyperparameter Optimization](#hyperparameter-optimization)
-    5. [Evaluation](#evaluation)
+    4. [Evaluation](#evaluation)
         - [Precision@N](#precisionn)
         - [nDCG@N](#ndcgn)
 7. [Code Implementation](#code-implementation)
@@ -61,9 +60,6 @@ After model training, we can extract document-level embeddings. These embeddings
 
 ## Calculate Cosine Similarity
 To assess the similarity between two documents within the RELISH corpus, we employ the Cosine Similarity metric. This process enables the generation of a 4-column matrix containing cosine similarity scores for existing pairs of PMIDs within our corpus. For a more detailed explanation of the process, please refer to this [documentation](https://github.com/zbmed-semtec/medline-preprocessing/tree/main/code/Cosine_Similarity).
-
-## Hyperparameter Optimization
-*To be written*
 
 ## Evaluation
 
